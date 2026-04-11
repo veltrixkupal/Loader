@@ -1,0 +1,532 @@
+repeat wait() until game:IsLoaded()
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/veltrixkupal/K.net-Library/refs/heads/main/Library%20luaua"))()
+
+local Window = Library:NewWindow({
+    Title = "Kryzen.net",
+    Description = "Car Dealership Tycoon",
+    Icon = "rbxassetid://128948495957267"
+})
+
+local MainTab = Window:AddTab({ Title = "Main Options" })
+local RaceTab = Window:AddTab({ Title = "Auto Races" })
+local SeasonTab = Window:AddTab({ Title = "Season Pass" })
+local CarTab = Window:AddTab({ Title = "Car Options" })
+
+local FarmSection = MainTab:AddSection({ Title = "Farm Options" })
+local TycoonSection = MainTab:AddSection({ Title = "Tycoon Options" })
+
+local vu1 = getgenv()
+local vu7 = cloneref(game:GetService("Players").LocalPlayer)
+local vu8 = cloneref(game:GetService("ReplicatedStorage"))
+
+function findCarPl()
+    local vu10 = workspace:WaitForChild("Cars")
+    local function v19()
+        local v11 = vu10
+        local v12, v13, v14 = ipairs(v11:GetChildren())
+        while true do
+            local v15
+            v14, v15 = v12(v13, v14)
+            if v14 == nil then break end
+            local v16 = v15:FindFirstChild("Stats")
+            if v16 then v16 = v15.Stats:FindFirstChild("Owner") end
+            if v16 and v16.Value == vu7.Name then
+                local v17 = v15:FindFirstChild("Body")
+                if v17 then v17 = v15.Body:FindFirstChild("VehicleSeat") end
+                if v17 and (v17.Occupant and v17.Occupant.Parent == vu7.Character) then
+                    return v15
+                end
+                local v18 = workspace.Cars[v15.Name].Body.VehicleSeat
+                workspace.Cars[v15.Name].ChassisMain.Seat:FireServer(v18)
+                return v15
+            end
+        end
+    end
+    local v20 = v19()
+    if not v20 then
+        vu8.Remotes.Spawn:FireServer("Fiat", "Desktop")
+        wait(0.5)
+        v20 = v19()
+    end
+    repeat wait(0.2) until v20
+    return v20
+end
+
+function moveCarToFast(p30, p31, p32)
+    local v33 = p30.PrimaryPart.CFrame
+    local v34 = p31.Position
+    local v35 = p32 or CFrame.Angles(v33:ToEulerAnglesXYZ())
+    p30:SetPrimaryPartCFrame(CFrame.new(v34) * v35)
+end
+
+function TeleportTo(p36)
+    local vu9 = vu7.Character or vu7.CharacterAdded:Wait()
+    vu9:SetPrimaryPartCFrame(p36 * CFrame.new(0, 5, 0))
+    return true
+end
+
+-- Auto Farm Car
+FarmSection:AddToggle({
+    Title = "Auto Farm Car",
+    Description = "Automatically farms car deliveries",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Auto Farm Car"] = state
+        local v44 = state and findCarPl()
+        if v44 then
+            spawn(function()
+                while vu1.Settings["Auto Farm Car"] and wait() do
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "W", 0, game)
+                end
+            end)
+            local v45 = CFrame.Angles(0, math.rad(179.7), 0)
+            moveCarToFast(v44, CFrame.new(-1861, 603, 3210), v45)
+            while vu1.Settings["Auto Farm Car"] and wait() do
+                if (v44.PrimaryPart.Position - Vector3.new(-1861, 603, 5227)).Magnitude < 60 then
+                    moveCarToFast(v44, CFrame.new(-1861, 603, 3210), v45)
+                end
+            end
+        end
+    end
+})
+
+-- Auto Build Tycoon
+TycoonSection:AddToggle({
+    Title = "Auto Build Tycoon",
+    Description = "Automatically builds your tycoon",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Auto Build Tycoon"] = state
+        if state then
+            local v47, v48, v49 = pairs(workspace.Tycoons:GetChildren())
+            local v50 = nil
+            while true do
+                local v51
+                v49, v51 = v47(v48, v49)
+                if v49 == nil then break end
+                if v51.Owner.Value == vu7.Name then v50 = v51 end
+            end
+            while vu1.Settings["Auto Build Tycoon"] and wait() do
+                local v52, v53, v54 = pairs(v50.Dealership.Purchases:GetChildren())
+                while true do
+                    local v55
+                    v54, v55 = v52(v53, v54)
+                    if v54 == nil then break end
+                    local v56 = { "BuyItem", v55.Name }
+                    vu8.Remotes.Build:FireServer(unpack(v56))
+                end
+            end
+        end
+    end
+})
+
+-- Auto Sell For NPC
+TycoonSection:AddToggle({
+    Title = "Auto Sell For NPC",
+    Description = "Automatically sells cars to NPC customers",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Auto Sell For NPC"] = state
+        if state then
+            local v58, v59, v60 = pairs(workspace.Tycoons:GetChildren())
+            local v61 = nil
+            while true do
+                local vu62
+                v60, vu62 = v58(v59, v60)
+                if v60 == nil then vu62 = v61 break end
+                if vu62.Owner.Value == vu7.Name then break end
+            end
+            if vu62 then
+                local vu63 = require(vu8.Databases.Cars)
+                local v64 = require(vu8.Modules.DealershipCustomerClientController)
+                local vu65 = false
+                local vu66 = v64.OnNPCAdded
+                function v64.OnNPCAdded(...)
+                    if vu1.Settings["Auto Sell For NPC"] then
+                        vu65 = true
+                        return vu66(...)
+                    end
+                end
+                local vu67 = v64.ShowCustomerDialogueMessage
+                function v64.ShowCustomerDialogueMessage(...)
+                    if not vu1.Settings["Auto Sell For NPC"] then return end
+                    if vu65 then
+                        local v68, v69, v70 = pairs(vu62.Dealership:GetChildren())
+                        local v71 = nil
+                        while true do
+                            local v72
+                            v70, v72 = v68(v69, v70)
+                            if v70 == nil then v72 = v71 break end
+                            if v72:GetAttribute("CustomerName") then break end
+                        end
+                        if v72 then
+                            local v73 = v72:GetAttribute("OrderId")
+                            local v74 = v72:GetAttribute("OrderSpecBudget")
+                            local v75 = v72:GetAttribute("OrderSpecColor")
+                            local v76 = v72:GetAttribute("OrderSpecRimColor")
+                            local v77 = v72:GetAttribute("OrderSpecRims")
+                            local v78 = v72:GetAttribute("OrderSpecSprings")
+                            if not vu1.Settings["Auto Sell For NPC"] then return end
+                            vu8.Remotes.DealershipCustomerController.NPCHandler:FireServer({ Action = "AcceptOrder", OrderId = tostring(v73) })
+                            local v79, v80 = unpack(string.split(v74, ";"))
+                            local v81 = tonumber(v79)
+                            local v82 = tonumber(v80)
+                            local v83, v84, v85 = pairs(vu63)
+                            local v86 = nil
+                            while true do
+                                local vu87, _ = v83(v84, v85)
+                                if vu87 == nil then break end
+                                v85 = vu87
+                                local v88, v89 = pcall(function() return vu8.Packages._Index["sleitnick_knit@1.7.0"].knit.Services.CarCustomizationService.RF.GetCarPrice:InvokeServer(vu87) end)
+                                if v88 and v89 then
+                                    local v90 = tonumber(v89)
+                                    if v81 <= v90 and v90 <= v82 then
+                                        v86 = tostring(vu87)
+                                        break
+                                    end
+                                end
+                            end
+                            if v86 then
+                                vu8.Remotes.DealershipCustomerController.NPCHandler:FireServer({ OrderId = tostring(v73), Action = "CompleteOrder", Specs = { Car = tostring(v86), Color = tostring(v75), Rims = tostring(v77), Springs = tostring(v78), RimColor = tostring(v76) } })
+                                vu8.Remotes.DealershipCustomerController.NPCHandler:FireServer({ Action = "CollectReward", OrderId = tostring(v73) })
+                            end
+                        end
+                        vu65 = false
+                        return vu67(...)
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- Auto Delivery
+TycoonSection:AddToggle({
+    Title = "Auto Delivery",
+    Description = "Automatically completes delivery jobs",
+    Default = true,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Auto Delivery"] = state
+        if state then
+            local vu92 = false
+            while vu1.Settings["Auto Delivery"] do
+                if vu92 then return end
+                task.wait()
+                vu8.Remotes.DealershipCustomerController.JobRemoteHandler:FireServer({ Action = "RequestJobsData" })
+                local vu93 = nil
+                vu93 = vu8.Remotes.DealershipCustomerController.JobRemoteHandler.OnClientEvent:Connect(function(p94)
+                    if not vu92 then
+                        vu92 = true
+                        if #p94.Jobs > 0 then
+                            local v95 = p94.Jobs[1]
+                            local vu96 = {}
+                            local v97 = { Truck = "DeliveryTruck", Action = "StartDeliveryJob" }
+                            local v98 = { { Id = v95.Id, Image = "rbxassetid://14766562703", CFrame = CFrame.new(-1628.668701171875, 601.6500854492188, 4617.27587890625) * CFrame.Angles(0, 1.5707963705062866, 0), JobData = { Id = v95.Id, Rims = v95.Rims, OrderId = v95.OrderId, Distance = v95.Distance, State = v95.State, Customer = v95.Customer, Color = v95.Color, Car = v95.Car, Springs = v95.Springs, Destination = v95.Destination, MoneyReward = v95.MoneyReward, RimColor = v95.RimColor } } }
+                            v97.Jobs = v98
+                            vu96[1] = v97
+                            local v99, _ = pcall(function() vu8.Remotes.DealershipCustomerController.JobRemoteHandler:FireServer(unpack(vu96)) end)
+                            if v99 then
+                                wait(5.5)
+                                local v100 = workspace.ActionTasksGames.Jobs[v95.Destination]
+                                if v100 then
+                                    local v101, v102, v103 = pairs(workspace.Cars:GetChildren())
+                                    while true do
+                                        local v104
+                                        v103, v104 = v101(v102, v103)
+                                        if v103 == nil then break end
+                                        if v104.Name == "DeliveryTruck" and v104.Stats.Owner.Value == vu7.Name then
+                                            local v105 = v100.DeliveryPart.CFrame - v100.DeliveryPart.Position
+                                            v104:SetPrimaryPartCFrame(CFrame.new(v100.DeliveryPart.Position + Vector3.new(0, 5, 0)) * v105)
+                                            wait(8)
+                                            vu93:Disconnect()
+                                            vu92 = false
+                                        end
+                                    end
+                                end
+                            else
+                                vu93:Disconnect()
+                                vu92 = false
+                            end
+                        end
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Airport Drag Race Section
+local AirportFolder = RaceTab:AddSection({ Title = "Airport Drag Race" })
+
+local LapsDropdown = AirportFolder:AddDropdown({
+    Title = "Select Laps",
+    Description = "Choose number of laps",
+    Values = {"1x", "3x", "5x"},
+    Default = "1x",
+    Callback = function(value) end
+})
+
+AirportFolder:AddToggle({
+    Title = "Auto Airport Drag Race",
+    Description = "Automatically completes airport drag races",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Auto Airport Drag Race"] = state
+        local v109 = state and findCarPl()
+        if v109 then
+            moveCarToFast(v109, CFrame.new(-4517, 603, 3416))
+            wait(1)
+            local v110 = findCarPl()
+            local v111 = workspace:WaitForChild("Races"):WaitForChild("Airport")
+            local v112 = v111.LobbyBottom
+            local v113 = v111.Checkpoints
+            local v115 = { ["1x"] = "1", ["3x"] = "3", ["5x"] = "5" }
+            while vu1.Settings["Auto Airport Drag Race"] and wait() do
+                if v111.Script.LobbyMembersAmount.Value <= 14 then
+                    local v116 = v110.PrimaryPart.CFrame - v110.PrimaryPart.Position
+                    local v117 = v112.Position + Vector3.new(0, 10, 0)
+                    repeat v110:SetPrimaryPartCFrame(CFrame.new(v117) * v116) wait() until (v110.PrimaryPart.Position - v117).Magnitude <= 2.5 or not vu1.Settings["Auto Airport Drag Race"]
+                    repeat wait() until not (v111.Script.RaceProgress.Value and vu1.Settings["Auto Airport Drag Race"])
+                    if not v111.Script.LobbyProgress.Value then
+                        repeat workspace.Races.RaceHandler.StartLobby:FireServer("Airport") wait() until v111.Script.LobbyProgress.Value or not vu1.Settings["Auto Airport Drag Race"]
+                    end
+                    v111.Script.Vote:FireServer(v115[LapsDropdown.Value], "Vote")
+                    repeat wait() until v111.Script.RaceProgress.Value or not vu1.Settings["Auto Airport Drag Race"]
+                    local v118 = v111.Script.Laps.Value
+                    for v119 = 1, v118 do
+                        for v120 = 1, #v113:GetChildren() do
+                            if not vu1.Settings["Auto Airport Drag Race"] then break end
+                            local v121 = v113[v120]:FindFirstChild("Checkpoint").CFrame
+                            moveCarToFast(v110, v121)
+                            wait(2.3)
+                        end
+                        if v118 == 2 and v119 == 2 or v118 == 3 and v119 == 3 then break end
+                        wait(0.5)
+                        moveCarToFast(v110, v111.GoalPart.CFrame)
+                        wait(0.5)
+                    end
+                    if vu1.Settings["Auto Airport Drag Race"] then
+                        moveCarToFast(v110, v111.GoalPart.CFrame)
+                        wait(1)
+                        vu8.Remotes.DestroyGui:FireServer("Prize")
+                    end
+                    TeleportTo(v112.CFrame)
+                end
+            end
+        end
+    end
+})
+
+-- Car Options Tab
+local CarSection = CarTab:AddSection({ Title = "Car Customization" })
+
+-- Get car list
+local v231 = vu7.PlayerGui.Menu.Inventory.Cars.Frame.Frame
+local v232, v233, v234 = pairs(v231:GetChildren())
+local v235 = {}
+while true do
+    local v236
+    v234, v236 = v232(v233, v234)
+    if v234 == nil then break end
+    if v236:IsA("ImageButton") then
+        local v237 = tostring(v236.Title.Text)
+        table.insert(v235, v237)
+    end
+end
+
+local CarMultiDropdown = CarSection:AddDropdown({
+    Title = "Select Car",
+    Description = "Choose car to modify",
+    Values = v235,
+    Default = v235[1] or "",
+    Multi = true,
+    Callback = function(value) end
+})
+
+CarSection:AddButton({
+    Title = "Open Color Wheel",
+    Description = "Opens color customization wheel",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/feVeolel/naofodeporra/refs/heads/main/Color%20Wheel"))()
+    end
+})
+
+CarSection:AddButton({
+    Title = "Color Car (Use Color Wheel First)",
+    Description = "Applies selected color to chosen cars",
+    Callback = function()
+        local v239 = vu7.PlayerGui["LDS HUB COLOR WHEEL"].ColorEditor
+        local v240 = CarMultiDropdown:GetValue()
+        for _, v244 in pairs(v240) do
+            local v245 = vu7.PlayerGui.Menu.Inventory.Cars.Frame.Frame
+            for _, v249 in pairs(v245:GetChildren()) do
+                if v249:IsA("ImageButton") and v249.Title.Text == v244 then
+                    local v250 = v239.Frame.BackgroundColor3
+                    vu8.Remotes.Paint:FireServer(v249.Name, v250, "Paint")
+                end
+            end
+        end
+    end
+})
+
+CarSection:AddDivider()
+
+local MultiplierSection = CarTab:AddSection({ Title = "Car Multipliers" })
+
+local vu251 = 1
+local SpeedSlider = MultiplierSection:AddSlider({
+    Title = "Select Multiplier Value",
+    Description = "Sets multiplier for car stats",
+    Min = 1,
+    Max = 150,
+    Default = 1,
+    Callback = function(value)
+        vu251 = value
+    end
+})
+
+MultiplierSection:AddToggle({
+    Title = "Multiplier Velocity Car",
+    Description = "Multiplies car acceleration",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Multiplier Velocity Car"] = state
+        if state then
+            local v254 = getgc(true)
+            local v255 = next
+            local v256 = nil
+            local v257 = {}
+            local v258 = nil
+            while true do
+                local v259
+                v256, v259 = v255(v254, v256)
+                if v256 == nil then v259 = v258 break end
+                if type(v259) == "table" and rawget(v259, "GearAccels") then
+                    for v260 = 1, 5 do v257[v260] = v259.GearAccels[v260] end
+                    break
+                end
+            end
+            while true do
+                task.wait()
+                if v259 then
+                    for v261 = 1, 5 do v259.GearAccels[v261] = v259.GearAccels[v261] * tonumber(vu251) end
+                end
+                if not vu1.Settings["Multiplier Velocity Car"] then
+                    if v259 then
+                        for v262 = 1, 5 do v259.GearAccels[v262] = v257[v262] end
+                    end
+                    break
+                end
+            end
+        end
+    end
+})
+
+MultiplierSection:AddToggle({
+    Title = "Multiplier Final Speed Car",
+    Description = "Multiplies car top speed",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Multiplier Final Speed Car"] = state
+        if state then
+            local v264 = getgc(true)
+            local v265 = next
+            local v266 = nil
+            local v267 = {}
+            local v268 = nil
+            while true do
+                local v269
+                v266, v269 = v265(v264, v266)
+                if v266 == nil then v269 = v268 break end
+                if type(v269) == "table" and rawget(v269, "GearSpeeds") then
+                    for v270 = 1, 5 do v267[v270] = v269.GearSpeeds[v270] end
+                    break
+                end
+            end
+            while true do
+                task.wait()
+                if v269 then
+                    for v271 = 1, 5 do v269.GearSpeeds[v271] = v269.GearSpeeds[v271] * tonumber(vu251) end
+                end
+                if not vu1.Settings["Multiplier Final Speed Car"] then
+                    if v269 then
+                        for v272 = 1, 5 do v269.GearSpeeds[v272] = v267[v272] end
+                    end
+                    break
+                end
+            end
+        end
+    end
+})
+
+MultiplierSection:AddToggle({
+    Title = "Multiplier Torque Car",
+    Description = "Multiplies car torque",
+    Default = false,
+    Callback = function(state)
+        vu1.Settings = vu1.Settings or {}
+        vu1.Settings["Multiplier Torque Car"] = state
+        if state then
+            local v274 = getgc(true)
+            local v275 = next
+            local v276 = nil
+            local v277 = {}
+            local v278 = nil
+            while true do
+                local v279
+                v276, v279 = v275(v274, v276)
+                if v276 == nil then v279 = v278 break end
+                if type(v279) == "table" and rawget(v279, "GearTorques") then
+                    for v280 = 1, 5 do v277[v280] = v279.GearTorques[v280] end
+                    break
+                end
+            end
+            while true do
+                task.wait()
+                if v279 then
+                    for v281 = 1, 5 do v279.GearTorques[v281] = v279.GearTorques[v281] * tonumber(vu251) end
+                end
+                if not vu1.Settings["Multiplier Torque Car"] then
+                    if v279 then
+                        for v282 = 1, 5 do v279.GearTorques[v282] = v277[v282] end
+                    end
+                    break
+                end
+            end
+        end
+    end
+})
+
+MultiplierSection:AddButton({
+    Title = "AirPlane Hand Brake",
+    Description = "Activates instant brake",
+    Callback = function()
+        local v283 = getgc(true)
+        local v284 = next
+        local v285 = nil
+        local v286 = nil
+        while true do
+            local v287
+            v285, v287 = v284(v283, v285)
+            if v285 == nil then v287 = v286 break end
+            if type(v287) == "table" and rawget(v287, "BrakePower") then break end
+        end
+        if v287 then
+            local v288 = v287.BrakePower
+            rawset(v287, "BrakePower", math.huge)
+            game:GetService("VirtualInputManager"):SendKeyEvent(true, "S", 0, game)
+            wait(0.5)
+            rawset(v287, "BrakePower", v288)
+        end
+    end
+})
+
+Library:Init()

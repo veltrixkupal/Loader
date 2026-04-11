@@ -1,0 +1,2172 @@
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Sounds = ReplicatedStorage:FindFirstChild("Sounds")
+
+if Sounds then
+    local ButtonClick = Sounds:FindFirstChild("ButtonClick")
+    if ButtonClick and ButtonClick:IsA("Sound") then
+        ButtonClick.SoundId = "rbxassetid://136972211034303"
+        ButtonClick.Volume = 100
+    end
+end
+
+local existingHub = CoreGui:FindFirstChild("TeddyUI_Premium") or LocalPlayer.PlayerGui:FindFirstChild("TeddyUI_Premium") or CoreGui:FindFirstChild("KryzenHub") or LocalPlayer.PlayerGui:FindFirstChild("KryzenHub")
+if existingHub then
+    LocalPlayer:Kick("Hub is already running! Execute only once.")
+    return
+end
+
+local hubMarker = Instance.new("Folder")
+hubMarker.Name = "KryzenHub"
+hubMarker.Parent = CoreGui
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local player = Players.LocalPlayer
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/veltrixkupal/K.net-Library/refs/heads/main/Library%20luaua"))()
+
+local Window = Library:NewWindow({
+    Title = "Kryzen.net",
+    Description = "Diesel n Steel",
+    Icon = "rbxassetid://128948495957267",
+    Color = Color3.fromRGB(255, 255, 255),
+    Size = UDim2.new(0, 580, 0, 310)
+})
+
+local MainTab = Window:AddTab({ Title = "Main" })
+local ShopTab = Window:AddTab({ Title = "Shop" })
+local MiscTab = Window:AddTab({ Title = "Misc" })
+local RoleTab = Window:AddTab({ Title = "Roles" })
+local MusicTab = Window:AddTab({ Title = "Music" })
+local BoostTab = Window:AddTab({ Title = "Boost" })
+local TpTab = Window:AddTab({ Title = "TP" })
+local TrollTab = Window:AddTab({ Title = "Troll" })
+
+local expMultiplier = 3400
+local dupeMultiplier = 3500
+local selectedCashValue = 10
+local selectedCoinValue = 0.5
+local catNet = ReplicatedStorage:WaitForChild("CatNet", 9e9):WaitForChild("Cat", 9e9)
+local remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9)
+
+local MiscSection1 = MiscTab:AddSection({ Title = "CPC Application" })
+MiscSection1:AddButton({
+    Title = "Apply Guiguinto - Bulakan",
+    Description = "Apply for CPC on Guiguinto route",
+    Callback = function()
+        local args = { [1] = { ["Route"] = "Guiguinto - Bulakan" } }
+        remotes:WaitForChild("ApplyForCPC", 9e9):FireServer(unpack(args))
+    end
+})
+
+MiscSection1:AddButton({
+    Title = "Apply Balagtas - Bulakan",
+    Description = "Apply for CPC on Balagtas route",
+    Callback = function()
+        local args = { [1] = { ["Route"] = "Balagtas - Bulakan" } }
+        remotes:WaitForChild("ApplyForCPC", 9e9):FireServer(unpack(args))
+    end
+})
+
+MiscSection1:AddButton({
+    Title = "Apply Malolos - Bulakan",
+    Description = "Apply for CPC on Malolos route",
+    Callback = function()
+        local args = { [1] = { ["Route"] = "Malolos - Bulakan" } }
+        remotes:WaitForChild("ApplyForCPC", 9e9):FireServer(unpack(args))
+    end
+})
+
+local MiscSection2 = MiscTab:AddSection({ Title = "Remover" })
+MiscSection2:AddButton({
+    Title = "Remove Jeepnies Exist",
+    Description = "Remove all jeepnies except yours",
+    Callback = function()
+        local player = game:GetService("Players").LocalPlayer
+        local jeepnies = workspace:FindFirstChild("Jeepnies")
+        if jeepnies then
+            for _, v in pairs(jeepnies:GetChildren()) do
+                if v.Name ~= player.Name then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+
+MiscSection2:AddButton({
+    Title = "Remove Vehicles Exist",
+    Description = "Remove all AI vehicles",
+    Callback = function()
+        local aiVehicles = workspace:FindFirstChild("AiVehicles")
+        if aiVehicles then
+            for _, v in pairs(aiVehicles:GetChildren()) do
+                v:Destroy()
+            end
+        end
+    end
+})
+
+local MiscSection3 = MiscTab:AddSection({ Title = "Mess" })
+local hideNotifActive = false
+local hideNotifLoop = nil
+
+MiscSection3:AddToggle({
+    Title = "Hide Notif",
+    Description = "Hide notifications from screen when enabled",
+    Default = false,
+    Callback = function(state)
+        hideNotifActive = state
+        if state then
+            local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+            local function hideNotifications()
+                local react = PlayerGui:FindFirstChild("ReactContainer")
+                if react then
+                    local notifs = react:FindFirstChild("Notifications")
+                    if notifs then
+                        notifs.Visible = false
+                    end
+                end
+            end
+            PlayerGui.ChildAdded:Connect(function(child)
+                if child.Name == "ReactContainer" and hideNotifActive then
+                    task.delay(0.1, function()
+                        local react = PlayerGui:FindFirstChild("ReactContainer")
+                        if react and hideNotifActive then
+                            local notifs = react:FindFirstChild("Notifications")
+                            if notifs then
+                                notifs.Visible = false
+                            end
+                        end
+                    end)
+                end
+            end)
+            if PlayerGui:FindFirstChild("ReactContainer") then
+                local react = PlayerGui.ReactContainer
+                react.ChildAdded:Connect(function(child)
+                    if child.Name == "Notifications" and hideNotifActive then
+                        task.delay(0.05, function()
+                            if child and child.Parent and hideNotifActive then
+                                child.Visible = false
+                            end
+                        end)
+                    end
+                end)
+            end
+            hideNotifLoop = task.spawn(function()
+                while hideNotifActive do
+                    hideNotifications()
+                    task.wait(2)
+                end
+            end)
+        else
+            if hideNotifLoop then
+                task.cancel(hideNotifLoop)
+                hideNotifLoop = nil
+            end
+            local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+            local react = PlayerGui:FindFirstChild("ReactContainer")
+            if react then
+                local notifs = react:FindFirstChild("Notifications")
+                if notifs then
+                    notifs.Visible = true
+                end
+            end
+            for _, child in pairs(PlayerGui:GetDescendants()) do
+                if child.Name == "Notifications" and child:IsA("Frame") then
+                    child.Visible = true
+                end
+            end
+        end
+    end
+})
+
+MiscSection3:AddButton({
+    Title = "Get Licence",
+    Description = "Pass the exam and get licence",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "PassedTheExam"; [3] = { ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+MiscSection3:AddButton({
+    Title = "Complete Tutorial",
+    Description = "Complete the tutorial",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "CompletedTutorial"; [3] = { ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+MiscSection3:AddButton({
+    Title = "Register Jeep",
+    Description = "Register your jeepney",
+    Callback = function()
+        local args = {}
+        remotes:WaitForChild("RegisterJeepney", 9e9):FireServer(unpack(args))
+    end
+})
+
+MiscSection3:AddButton({
+    Title = "Max Fuel",
+    Description = "Set your jeep fuel to maximum",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "RecieveFuel"; [3] = { ["Amount"] = 100; ["JeepneyValues"] = workspace:WaitForChild("Jeepnies", 9e9):WaitForChild(game.Players.LocalPlayer.Name, 9e9):WaitForChild("JeepneyValues", 9e9); ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+MiscSection3:AddButton({
+    Title = "Repair Engine",
+    Description = "Repair your jeep engine using wrench",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local args = { [1] = { ["Character"] = workspace:WaitForChild(player.Name, 9e9); ["Jeepney"] = workspace:WaitForChild("Jeepnies", 9e9):WaitForChild(player.Name, 9e9); }; }
+        remotes:WaitForChild("WrenchRepair", 9e9):FireServer(unpack(args))
+    end
+})
+
+local MiscSection4 = MiscTab:AddSection({ Title = "Server" })
+MiscSection4:AddButton({
+    Title = "Server Hop",
+    Description = "Hop to a different server",
+    Callback = function()
+        local placeId = game.PlaceId
+        local jobId = game.JobId
+        local x = {}
+        for _, v in pairs(game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?limit=100"))) do
+            if type(v) == "table" then
+                for _, v2 in pairs(v) do
+                    if type(v2) == "table" and v2.playing ~= nil and v2.id ~= jobId then
+                        table.insert(x, v2.id)
+                    end
+                end
+            end
+        end
+        if #x > 0 then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(placeId, x[math.random(1, #x)], game.Players.LocalPlayer)
+        end
+    end
+})
+
+MiscSection4:AddButton({
+    Title = "Rejoin",
+    Description = "Rejoin the current server",
+    Callback = function()
+        local placeId = game.PlaceId
+        local jobId = game.JobId
+        game:GetService("TeleportService"):TeleportToPlaceInstance(placeId, jobId, game.Players.LocalPlayer)
+    end
+})
+
+local MiscSection5 = MiscTab:AddSection({ Title = "Jeep Selling" })
+local selectedSellJeep = "Sarao Custombuilt Model 2_#1"
+local sellJeepOptions = { "Sarao Custombuilt Model 2", "DF Devera Long Model", "Morales 10 Seater", "Milwaukee Motor Sport 11 Seater" }
+
+MiscSection5:AddDropdown({
+    Title = "Select Jeep to Sell",
+    Description = "Choose which jeep to sell",
+    Values = sellJeepOptions,
+    Default = "Sarao Custombuilt Model 2",
+    Callback = function(value)
+        if value == "Sarao Custombuilt Model 2" then
+            selectedSellJeep = "Sarao Custombuilt Model 2_#1"
+        elseif value == "DF Devera Long Model" then
+            selectedSellJeep = "DF Devera Long Model_#1"
+        elseif value == "Morales 10 Seater" then
+            selectedSellJeep = "Morales 10 Seater_#1"
+        elseif value == "Milwaukee Motor Sport 11 Seater" then
+            selectedSellJeep = "Milwaukee Motor Sport 11 Seater_#1"
+        end
+    end
+})
+
+MiscSection5:AddButton({
+    Title = "Sell Jeep",
+    Description = "Sell the selected jeep",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "SellJeepney"; [3] = { ["Index"] = selectedSellJeep; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+local MiscSection6 = MiscTab:AddSection({ Title = "Bark" })
+local barkOptions = { "BULAKAN", "BALAGTAS", "MALOLOS", "GUIGUINTO", "MARAMI PA", "ISA PA", "Kinsehan", "Waluhan", "Magkabilaan po yan", "Pakiusad nalang po sa Kaliwa", "Pakiusad nalang po sa kanan" }
+local selectedBarkMessage = "Pakiusad nalang po sa kanan"
+
+MiscSection6:AddDropdown({
+    Title = "Bark Message",
+    Description = "Choose your bark message",
+    Values = barkOptions,
+    Default = "Pakiusad nalang po sa kanan",
+    Callback = function(value)
+        selectedBarkMessage = value
+    end
+})
+
+MiscSection6:AddButton({
+    Title = "Bark",
+    Description = "Send bark message to players",
+    Callback = function()
+        local args = { [1] = { ["Password"] = 412543273; ["VoiceOver"] = selectedBarkMessage; }; }
+        remotes:WaitForChild("Bark", 9e9):FireServer(unpack(args))
+    end
+})
+
+local ShopSection1 = ShopTab:AddSection({ Title = "Jeepney Shop" })
+ShopSection1:AddButton({
+    Title = "Sarao Custombuilt",
+    Description = "Buy Sarao Custombuilt Jeepney",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "BuyJeepney"; [3] = { ["JeepneyName"] = "Sarao Custombuilt Model 2"; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+ShopSection1:AddButton({
+    Title = "DF Devera Long",
+    Description = "Buy DF Devera Long Model",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "BuyJeepney"; [3] = { ["JeepneyName"] = "DF Devera Long Model"; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+ShopSection1:AddButton({
+    Title = "Morales 10 Seater",
+    Description = "Buy Morales 10 Seater",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "BuyJeepney"; [3] = { ["JeepneyName"] = "Morales 10 Seater"; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+ShopSection1:AddButton({
+    Title = "Milwaukee 11 Seater",
+    Description = "Buy Milwaukee Motor Sport",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "BuyJeepney"; [3] = { ["JeepneyName"] = "Milwaukee Motor Sport 11 Seater"; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+local ShopSection2 = ShopTab:AddSection({ Title = "Tools" })
+local function buyTool(toolName)
+    local args = { [1] = { ["Password"] = 520430635; ["ToolName"] = toolName; }; }
+    remotes:WaitForChild("BuyTool", 9e9):InvokeServer(unpack(args))
+end
+
+ShopSection2:AddButton({
+    Title = "Diesel Can",
+    Description = "Buy Diesel Can",
+    Callback = function()
+        buyTool("Diesel can")
+    end
+})
+
+ShopSection2:AddButton({
+    Title = "Wrench",
+    Description = "Buy Wrench",
+    Callback = function()
+        buyTool("Wrench")
+    end
+})
+
+ShopSection2:AddButton({
+    Title = "Baseball Bat",
+    Description = "Buy Baseball Bat",
+    Callback = function()
+        buyTool("Baseball bat")
+    end
+})
+
+ShopSection2:AddButton({
+    Title = "Metal Pipe",
+    Description = "Buy Metal Pipe",
+    Callback = function()
+        buyTool("Metal pipe")
+    end
+})
+
+ShopSection2:AddButton({
+    Title = "Hammer",
+    Description = "Buy Hammer",
+    Callback = function()
+        buyTool("Hammer")
+    end
+})
+
+ShopSection2:AddButton({
+    Title = "Coolant Can",
+    Description = "Buy Coolant Can",
+    Callback = function()
+        buyTool("coolant can")
+    end
+})
+
+local ShopSection3 = ShopTab:AddSection({ Title = "Food" })
+local function buyFood(foodName)
+    local args = { [1] = { ["Password"] = 520430635; ["FoodName"] = foodName; }; }
+    remotes:WaitForChild("BuyFood", 9e9):InvokeServer(unpack(args))
+end
+
+ShopSection3:AddButton({
+    Title = "Hotdog",
+    Description = "Buy Hotdog",
+    Callback = function()
+        buyFood("Hotdog")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Water",
+    Description = "Buy Water",
+    Callback = function()
+        buyFood("Water")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Fried Chicken",
+    Description = "Buy Fried Chicken",
+    Callback = function()
+        buyFood("Fried Chicken")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Bloxy Cola",
+    Description = "Buy Bloxy Cola",
+    Callback = function()
+        buyFood("Bloxy Cola")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Betamax",
+    Description = "Buy Betamax",
+    Callback = function()
+        buyFood("Betamax")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Quek Quek",
+    Description = "Buy Quek Quek",
+    Callback = function()
+        buyFood("Quek Quek")
+    end
+})
+
+ShopSection3:AddButton({
+    Title = "Isaw",
+    Description = "Buy Isaw",
+    Callback = function()
+        buyFood("Isaw")
+    end
+})
+
+local MainSection1 = MainTab:AddSection({ Title = "EXP" })
+local isRunning = false
+local expLoop
+
+MainSection1:AddToggle({
+    Title = "Auto EXP",
+    Description = "Automatically gain experience points",
+    Default = false,
+    Callback = function(state)
+        isRunning = state
+        if state then
+            local Remote = remotes:WaitForChild("UnloadPassenger", 9e9)
+            local Passengers = workspace:WaitForChild("Passengers", 9e9)
+            local Jeepney = workspace:WaitForChild("Jeepnies", 9e9):WaitForChild(LocalPlayer.Name, 9e9)
+            local Seat = Jeepney:WaitForChild("Body", 9e9):WaitForChild("FunctionalStuff", 9e9):WaitForChild("Seats", 9e9):GetChildren()[14]
+            local SpawnPoints = workspace:WaitForChild("Map", 9e9):WaitForChild("Misc", 9e9):WaitForChild("PassengerSpawnPoints", 9e9)
+            local function getRandomSpawnPoint()
+                local folder = SpawnPoints:GetChildren()
+                local randomFolder = folder[math.random(1, #folder)]
+                local points = randomFolder:GetChildren()
+                return points[math.random(1, #points)]
+            end
+            expLoop = task.spawn(function()
+                while isRunning do
+                    for i = 1, expMultiplier do
+                        pcall(function()
+                            local Passenger = Passengers:GetChildren()
+                            if #Passenger > 0 then
+                                local args = { [1] = { ["Password"] = 826272728262, ["Passenger"] = Passenger[math.random(1, #Passenger)], ["Jeepney"] = Jeepney, ["Seat"] = Seat, ["Destination"] = getRandomSpawnPoint() } }
+                                Remote:FireServer(unpack(args))
+                            end
+                        end)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        else
+            if expLoop then
+                task.cancel(expLoop)
+            end
+        end
+    end
+})
+
+local manualGainEnabled = false
+MainSection1:AddToggle({
+    Title = "Manual Gain",
+    Description = "Manually gain experience points when enabled",
+    Default = false,
+    Callback = function(state)
+        manualGainEnabled = state
+    end
+})
+
+local MainSection9 = MainTab:AddSection({ Title = "Km" })
+local isAutoKmActive = false
+local autoKmLoop = nil
+
+MainSection9:AddToggle({
+    Title = "Auto Km",
+    Description = "Automatic Gain Km While in Jeep",
+    Default = false,
+    Callback = function(state)
+        isAutoKmActive = state
+        if state then
+            autoKmLoop = task.spawn(function()
+                while isAutoKmActive do
+                    pcall(function()
+                        local player = game.Players.LocalPlayer
+                        local char = player.Character
+                        if char then
+                            local hum = char:FindFirstChild("Humanoid")
+                            if hum and hum.SeatPart then
+                                local car = hum.SeatPart.Parent
+                                if car and car:FindFirstChild("Body") then
+                                    local body = car.Body
+                                    if body:FindFirstChild("#Weight") then
+                                        body.PrimaryPart = body["#Weight"]
+                                    end
+                                    local carPrimaryPart = car.PrimaryPart or (body and body["#Weight"])
+                                    if carPrimaryPart then
+                                        local location1 = Vector3.new(-589929299282829, 74, -2940)
+                                        local location2 = Vector3.new(-2827827282682, 74, 3171)
+                                        while isAutoKmActive do
+                                            repeat
+                                                if not isAutoKmActive then break end
+                                                task.wait()
+                                                carPrimaryPart.Velocity = carPrimaryPart.CFrame.LookVector * 5000
+                                                car:PivotTo(CFrame.new(carPrimaryPart.Position, location1))
+                                            until (char.PrimaryPart.Position - location1).Magnitude < 50 or not isAutoKmActive
+                                            if not isAutoKmActive then break end
+                                            carPrimaryPart.Velocity = Vector3.new(0,0,0)
+                                            task.wait(1)
+                                            repeat
+                                                if not isAutoKmActive then break end
+                                                task.wait()
+                                                carPrimaryPart.Velocity = carPrimaryPart.CFrame.LookVector * 5000
+                                                car:PivotTo(CFrame.new(carPrimaryPart.Position, location2))
+                                            until (char.PrimaryPart.Position - location2).Magnitude < 50 or not isAutoKmActive
+                                            if not isAutoKmActive then break end
+                                            carPrimaryPart.Velocity = Vector3.new(0,0,0)
+                                            task.wait(1)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end)
+        else
+            if autoKmLoop then
+                task.cancel(autoKmLoop)
+                autoKmLoop = nil
+                pcall(function()
+                    local player = game.Players.LocalPlayer
+                    local char = player.Character
+                    if char then
+                        local hum = char:FindFirstChild("Humanoid")
+                        if hum and hum.SeatPart then
+                            local car = hum.SeatPart.Parent
+                            if car and car:FindFirstChild("Body") then
+                                local body = car.Body
+                                if body:FindFirstChild("#Weight") then
+                                    local carPrimaryPart = body["#Weight"]
+                                    carPrimaryPart.Velocity = Vector3.new(0,0,0)
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end
+    end
+})
+
+local MainSection2 = MainTab:AddSection({ Title = "Duper" })
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "KryzenDupeGUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Enabled = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -65)
+MainFrame.Size = UDim2.new(0, 240, 0, 130)
+MainFrame.BorderSizePixel = 0
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 15)
+MainCorner.Parent = MainFrame
+
+local MainGradient = Instance.new("UIGradient")
+MainGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(230, 230, 255)) }
+MainGradient.Rotation = 45
+MainGradient.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 1.5
+UIStroke.Transparency = 0
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+local BorderGradient = Instance.new("UIGradient")
+BorderGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(230, 230, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255)) }
+BorderGradient.Parent = UIStroke
+
+task.spawn(function()
+    while MainFrame.Parent do
+        BorderGradient.Rotation = BorderGradient.Rotation + 1
+        task.wait(0.02)
+    end
+end)
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 0, 0.05, 0)
+Title.Size = UDim2.new(1, 0, 0.25, 0)
+Title.Font = Enum.Font.FredokaOne
+Title.Text = "Kryzen Dupe Cash"
+Title.TextColor3 = Color3.fromRGB(0, 0, 0)
+Title.TextSize = 20
+Title.ZIndex = 2
+
+local TitleStroke = Instance.new("UIStroke")
+TitleStroke.Parent = Title
+TitleStroke.Thickness = 2
+TitleStroke.Color = Color3.fromRGB(255, 255, 255)
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = MainFrame
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Position = UDim2.new(0.075, 0, 0.45, 0)
+ToggleButton.Size = UDim2.new(0.85, 0, 0.45, 0)
+ToggleButton.AutoButtonColor = false
+ToggleButton.Text = ""
+
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 12)
+ButtonCorner.Parent = ToggleButton
+
+local ButtonMainGradient = Instance.new("UIGradient")
+ButtonMainGradient.Name = "ButtonMainGradient"
+ButtonMainGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(200, 200, 200)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(150, 150, 150)) }
+ButtonMainGradient.Rotation = 90
+ButtonMainGradient.Parent = ToggleButton
+
+local ButtonStroke = Instance.new("UIStroke")
+ButtonStroke.Parent = ToggleButton
+ButtonStroke.Color = Color3.fromRGB(255, 255, 255)
+ButtonStroke.Thickness = 1.5
+ButtonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local ButtonBorderGradient = Instance.new("UIGradient")
+ButtonBorderGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(230, 230, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255)) }
+ButtonBorderGradient.Parent = ButtonStroke
+
+task.spawn(function()
+    while ToggleButton.Parent do
+        ButtonBorderGradient.Rotation = ButtonBorderGradient.Rotation - 1
+        task.wait(0.02)
+    end
+end)
+
+local ButtonLabel = Instance.new("TextLabel")
+ButtonLabel.Name = "ButtonLabel"
+ButtonLabel.Parent = ToggleButton
+ButtonLabel.BackgroundTransparency = 1
+ButtonLabel.Size = UDim2.new(1, 0, 1, 0)
+ButtonLabel.Font = Enum.Font.FredokaOne
+ButtonLabel.Text = "OFF"
+ButtonLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+ButtonLabel.TextSize = 24
+ButtonLabel.ZIndex = 2
+
+local LabelStroke = Instance.new("UIStroke")
+LabelStroke.Parent = ButtonLabel
+LabelStroke.Thickness = 2
+LabelStroke.Color = Color3.fromRGB(255, 255, 255)
+
+local LabelGradient = Instance.new("UIGradient")
+LabelGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(230, 230, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255)) }
+LabelGradient.Parent = ButtonLabel
+
+task.spawn(function()
+    local t = 0
+    while ButtonLabel.Parent do
+        t = t + 0.02
+        if t > 1 then t = -1 end
+        LabelGradient.Offset = Vector2.new(t, 0)
+        task.wait(0.03)
+    end
+end)
+
+local dupeArgs = { [1] = { [1] = { [1] = "3"; [2] = "RecieveCash"; [3] = { ["Value"] = 100; ["Main"] = true; ["Password"] = 649686508; }; }; }; }
+local dupeThreads = {}
+local dupeEnabled = false
+
+local function startDupe()
+    dupeEnabled = true
+    for i = 1, dupeMultiplier do
+        local thread = task.spawn(function()
+            while dupeEnabled do
+                pcall(function()
+                    catNet:FireServer(unpack(dupeArgs))
+                end)
+                task.wait(0.25)
+            end
+        end)
+        table.insert(dupeThreads, thread)
+    end
+end
+
+local function stopDupe()
+    dupeEnabled = false
+    for _, thread in ipairs(dupeThreads) do
+        task.cancel(thread)
+    end
+    dupeThreads = {}
+end
+
+local toggled = false
+local db = false
+
+ToggleButton.MouseButton1Click:Connect(function()
+    if db then return end
+    db = true
+    toggled = not toggled
+    if toggled then
+        ButtonLabel.Text = "ON"
+        ButtonMainGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 255, 100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 200, 50)) }
+        startDupe()
+    else
+        ButtonLabel.Text = "OFF"
+        ButtonMainGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(200, 200, 200)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(150, 150, 150)) }
+        stopDupe()
+    end
+    task.wait(0.2)
+    db = false
+end)
+
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    local targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    TweenService:Create(MainFrame, TweenInfo.new(0.1), {Position = targetPos}):Play()
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+MainSection2:AddToggle({
+    Title = "Dupe Cash",
+    Description = "Open and Close The Dupe Cash Gui",
+    Default = false,
+    Callback = function(state)
+        ScreenGui.Enabled = state
+    end
+})
+
+local MainSection3 = MainTab:AddSection({ Title = "Send" })
+local cashRunning = false
+local cashThreads = {}
+local coinLoop = nil
+local selectedTargetPlayer = nil
+
+MainSection3:AddInput({
+    Title = "Send Cash Value",
+    Description = "Enter value for send cash",
+    PlaceHolder = "10",
+    Default = "10",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            selectedCashValue = num
+        end
+    end
+})
+
+MainSection3:AddInput({
+    Title = "Send Coin Value",
+    Description = "Enter value for send coin",
+    PlaceHolder = "0.5",
+    Default = "0.5",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            selectedCoinValue = num
+        end
+    end
+})
+
+local function refreshPlayerList()
+    local players = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Name ~= LocalPlayer.Name then
+            table.insert(players, player.Name)
+        end
+    end
+    return players
+end
+
+MainSection3:AddDropdown({
+    Title = "Select Target Player",
+    Description = "Choose a player to send to",
+    Values = refreshPlayerList(),
+    Default = #refreshPlayerList() > 0 and refreshPlayerList()[1] or "No players",
+    Callback = function(value)
+        selectedTargetPlayer = value
+        if value and value ~= "" and value ~= "No players" then
+            local success, result = pcall(function()
+                local barya = Players[value].stats.Barya.Value
+                Players[value].stats.Barya:GetPropertyChangedSignal("Value"):Connect(function()
+                    if Players[value] then
+                    end
+                end)
+            end)
+        end
+    end
+})
+
+MainSection3:AddButton({
+    Title = "Refresh Player List",
+    Description = "Update the list of available players",
+    Callback = function()
+        if Library.Items["Select Target Player"] then
+            Library.Items["Select Target Player"].Refresh(refreshPlayerList())
+        end
+    end
+})
+
+MainSection3:AddToggle({
+    Title = "Send Cash Inf",
+    Description = "Infinitely send cash to target player",
+    Default = false,
+    Callback = function(state)
+        cashRunning = state
+        if state then
+            if not selectedTargetPlayer then return end
+            local targetPlayer = Players:FindFirstChild(selectedTargetPlayer)
+            if not targetPlayer then return end
+            local checkCashRemote = remotes:WaitForChild("CheckCash", 9e9)
+            for i = 1, 20 do
+                local thread = task.spawn(function()
+                    while cashRunning do
+                        for j = 1, 100 do
+                            pcall(function()
+                                local sendArgs = { [1] = { [1] = { [1] = "3"; [2] = "SendCash"; [3] = { ["Value"] = selectedCashValue; ["OtherPlayer"] = targetPlayer; ["Password"] = 157913333; }; }; }; }
+                                catNet:FireServer(unpack(sendArgs))
+                            end)
+                        end
+                        for k = 1, 100 do
+                            pcall(function()
+                                checkCashRemote:InvokeServer(selectedCashValue)
+                            end)
+                        end
+                        task.wait(0.01)
+                    end
+                end)
+                table.insert(cashThreads, thread)
+            end
+        else
+            for _, thread in ipairs(cashThreads) do
+                task.cancel(thread)
+            end
+            cashThreads = {}
+        end
+    end
+})
+
+MainSection3:AddToggle({
+    Title = "Send Coin Inf",
+    Description = "Infinitely send coins to target player",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if not selectedTargetPlayer then return end
+            local targetPlayer = Players:FindFirstChild(selectedTargetPlayer)
+            if not targetPlayer then return end
+            coinLoop = task.spawn(function()
+                while state do
+                    for j = 1, 50 do
+                        pcall(function()
+                            local args = { [1] = { [1] = { [1] = "3"; [2] = "SendCoin"; [3] = { ["Value"] = selectedCoinValue; ["OtherPlayer"] = targetPlayer; ["Password"] = 157913333; }; }; }; }
+                            catNet:FireServer(unpack(args))
+                        end)
+                    end
+                    task.wait(0.01)
+                end
+            end)
+        else
+            if coinLoop then
+                task.cancel(coinLoop)
+                coinLoop = nil
+            end
+        end
+    end
+})
+
+local MainSection4 = MainTab:AddSection({ Title = "Deduct" })
+local deductValue = 0
+
+MainSection4:AddInput({
+    Title = "Removing Value",
+    Description = "Enter amount to deduct",
+    PlaceHolder = "0",
+    Default = "0",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            deductValue = num
+        end
+    end
+})
+
+MainSection4:AddButton({
+    Title = "Remove Exp",
+    Description = "Remove EXP from player",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "DeductExp"; [3] = { ["Value"] = deductValue; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+MainSection4:AddButton({
+    Title = "Remove Cash",
+    Description = "Remove Cash from player",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "DeductCash"; [3] = { ["Value"] = deductValue; ["Password"] = 157913333; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+local MainSection5 = MainTab:AddSection({ Title = "Reset" })
+MainSection5:AddButton({
+    Title = "Reset Cash",
+    Description = "Reset Cash To 0",
+    Callback = function()
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "RecieveOnHoldCash"; [3] = { ["Password"] = 649686508; ["Value"] = 100000000000; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+local MainSection6 = MainTab:AddSection({ Title = "Parts" })
+local selectedPartsJeep = "Sarao Custombuilt Model 2_#1"
+local partsJeepBaseName = "Sarao Custombuilt Model 2"
+local jeepIndexNumber = "1"
+local partsJeepOptions = { "Sarao Custombuilt Model 2", "DF Devera Long Model", "Morales 10 Seater", "Milwaukee Motor Sport 11 Seater" }
+
+MainSection6:AddDropdown({
+    Title = "Select Jeep",
+    Description = "Choose which jeep to max out parts",
+    Values = partsJeepOptions,
+    Default = "Sarao Custombuilt Model 2",
+    Callback = function(value)
+        partsJeepBaseName = value
+        selectedPartsJeep = value .. "_#" .. jeepIndexNumber
+    end
+})
+
+MainSection6:AddInput({
+    Title = "Jeep Index Number",
+    Description = "Enter the jeep index number (e.g., 1, 2, 3)",
+    PlaceHolder = "1",
+    Default = "1",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            jeepIndexNumber = tostring(num)
+            selectedPartsJeep = partsJeepBaseName .. "_#" .. jeepIndexNumber
+        end
+    end
+})
+
+MainSection6:AddButton({
+    Title = "Max All Jeep Parts",
+    Description = "Unlock All Parts Without Deduct",
+    Callback = function()
+        local getDataStoreArgs = {}
+        local remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9)
+        remotes:WaitForChild("GetDataStore", 9e9):InvokeServer(unpack(getDataStoreArgs))
+        task.wait(0.01)
+        local args = { [1] = { [1] = { [1] = "3"; [2] = "CloseCustomize"; [3] = { ["Password"] = 136919215; ["NewOwnedParts"] = { ["BA - 05"] = 100; ["BA - 01"] = 100; ["BA - 03"] = 100; ["4-Speed Manual"] = 100; ["6-Speed Manual"] = 100; ["5-Speed Manual"] = 100; ["C - 04"] = 100; ["B - 04"] = 100; ["4HK1 Twin Turbo"] = 100; ["4JJ1"] = 100; ["4HK1 Single Turbo"] = 100; ["4JK1"] = 100; ["4HE1 Single Turbo"] = 100; ["4-Speed Manual (High Ratio)"] = 100; ["T - 01 (F)"] = 100; ["EO - 01"] = 100; ["T - 05 (R)"] = 100; ["T - 03 (R)"] = 100; ["EO - 05"] = 100; ["BA - 02"] = 100; ["B - 02"] = 100; ["BA - 04"] = 100; ["T - 02 (F)"] = 100; ["T - 04 (R)"] = 100; ["T - 04 (F)"] = 100; ["R - 01"] = 100; ["T - 02 (R)"] = 100; ["T - 03 (F)"] = 100; ["B - 03"] = 100; ["BF - 01"] = 100; ["T - 05 (F)"] = 100; ["4HF1 Twin Turbo"] = 100; ["TO - 05"] = 100; ["CL - 01"] = 100; ["TO - 01"] = 100; ["B - 05"] = 100; ["T - 01 (R)"] = 100; ["CL - 02"] = 100; ["BF - 02"] = 100; ["4BE1"] = 100; ["4BC2"] = 100; ["B - 01"] = 100; ["R - 02"] = 100; ["D - 01"] = 100; ["C - 01"] = 100; ["C - 02"] = 100; ["C - 03"] = 100; ["EO - 02"] = 100; ["EO - 03"] = 100; ["EO - 04"] = 100; ["TO - 02"] = 100; ["TO - 03"] = 100; ["TO - 04"] = 100; }; ["NewEquippedParts"] = { ["Clutch"] = "CL - 02"; ["Brake"] = "B - 05"; ["Differential"] = "D - 01"; ["Engine"] = "4HK1 Twin Turbo"; ["Transmission"] = "4-Speed Manual (High Ratio)"; ["Coolant"] = "C - 04"; ["BrakeFluid"] = "BF - 02"; ["RearTires"] = "T - 03 (R)"; ["TransmissionOil"] = "TO - 05"; ["Battery"] = "BA - 05"; ["Radiator"] = "R - 02"; ["EngineOil"] = "EO - 05"; ["FrontTires"] = "T - 03 (F)"; }; ["JeepneyName"] = selectedPartsJeep; ["NewPartsStatus"] = { ["FrontTiresHealth"] = 100; ["DifferentialHealth"] = 100; ["ClutchHealth"] = 100; ["TransmissionHealth"] = 100; ["RadiatorHealth"] = 100; ["CoolantLevel"] = 100; ["BrakeHealth"] = 100; ["EngineHealth"] = 100; ["RearTiresHealth"] = 100; ["BrakeFluid"] = 100; ["TransmissionOil"] = 100; ["EngineOil"] = 100; ["BatteryHealth"] = 100; }; }; }; }; }
+        catNet:FireServer(unpack(args))
+    end
+})
+
+local function spawnRole(roleName)
+    local args = { [1] = { [1] = { [1] = "3"; [2] = "SpawnCharacter"; [3] = { ["Password"] = 157913333; ["Role"] = roleName; }; }; }; }
+    catNet:FireServer(unpack(args))
+end
+
+local RoleSection1 = RoleTab:AddSection({ Title = "Law Enforcement" })
+RoleSection1:AddButton({
+    Title = "Police",
+    Description = "Spawn as Police",
+    Callback = function()
+        spawnRole("Police")
+    end
+})
+
+RoleSection1:AddButton({
+    Title = "Fire Enforcement",
+    Description = "Spawn as Fire Enforcement",
+    Callback = function()
+        spawnRole("Fire Enforcement")
+    end
+})
+
+local RoleSection2 = RoleTab:AddSection({ Title = "Transportation" })
+RoleSection2:AddButton({
+    Title = "Driver",
+    Description = "Spawn as Driver",
+    Callback = function()
+        spawnRole("Driver")
+    end
+})
+
+RoleSection2:AddButton({
+    Title = "Conductor",
+    Description = "Spawn as Conductor",
+    Callback = function()
+        spawnRole("Conductor")
+    end
+})
+
+RoleSection2:AddButton({
+    Title = "Barker",
+    Description = "Spawn as Barker",
+    Callback = function()
+        spawnRole("Barker")
+    end
+})
+
+RoleSection2:AddButton({
+    Title = "Operator",
+    Description = "Spawn as Operator",
+    Callback = function()
+        spawnRole("Operator")
+    end
+})
+
+local RoleSection3 = RoleTab:AddSection({ Title = "Management" })
+RoleSection3:AddButton({
+    Title = "Owner",
+    Description = "Spawn as Owner",
+    Callback = function()
+        spawnRole("Owner")
+    end
+})
+
+RoleSection3:AddButton({
+    Title = "Co Owner",
+    Description = "Spawn as Co Owner",
+    Callback = function()
+        spawnRole("Co Owner")
+    end
+})
+
+RoleSection3:AddButton({
+    Title = "Manager",
+    Description = "Spawn as Manager",
+    Callback = function()
+        spawnRole("Manager")
+    end
+})
+
+local RoleSection4 = RoleTab:AddSection({ Title = "Civilians" })
+RoleSection4:AddButton({
+    Title = "Player",
+    Description = "Spawn as Player",
+    Callback = function()
+        spawnRole("Player")
+    end
+})
+
+RoleSection4:AddButton({
+    Title = "Civilian",
+    Description = "Spawn as Civilian",
+    Callback = function()
+        spawnRole("Civilian")
+    end
+})
+
+RoleSection4:AddButton({
+    Title = "Passenger",
+    Description = "Spawn as Passenger",
+    Callback = function()
+        spawnRole("Passenger")
+    end
+})
+
+RoleSection4:AddButton({
+    Title = "VIP",
+    Description = "Spawn as VIP",
+    Callback = function()
+        spawnRole("VIP")
+    end
+})
+
+local function teleportTo(targetPosition)
+    local player = LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local targetCFrame = CFrame.new(targetPosition)
+    if humanoid and humanoid.SeatPart then
+        local jeepFolder = workspace:FindFirstChild("Jeepnies")
+        local jeep = jeepFolder and jeepFolder:FindFirstChild(player.Name)
+        if jeep then
+            local root = jeep.PrimaryPart or jeep:FindFirstChildWhichIsA("BasePart")
+            if root then
+                jeep:SetPrimaryPartCFrame(targetCFrame)
+                return
+            end
+        end
+    end
+    char:PivotTo(targetCFrame)
+end
+
+local TpSection1 = TpTab:AddSection({ Title = "Terminals" })
+TpSection1:AddButton({
+    Title = "Bulakan Terminal",
+    Description = "Bulakan - Balagtas",
+    Callback = function()
+        teleportTo(Vector3.new(-626, 16, -3202))
+    end
+})
+
+TpSection1:AddButton({
+    Title = "Balagtas Terminal",
+    Description = "Balagtas - Bulakan",
+    Callback = function()
+        teleportTo(Vector3.new(-3922, 17, 3156))
+    end
+})
+
+TpSection1:AddButton({
+    Title = "Malolos Terminal",
+    Description = "Malolos - Bulakan",
+    Callback = function()
+        teleportTo(Vector3.new(17606, 16, -1195))
+    end
+})
+
+TpSection1:AddButton({
+    Title = "Guiguinto Terminal",
+    Description = "Guiguinto - Bulakan",
+    Callback = function()
+        teleportTo(Vector3.new(1060, 16, 3167))
+    end
+})
+
+local TpSection2 = TpTab:AddSection({ Title = "Drop Off" })
+TpSection2:AddButton({
+    Title = "Drop point Bulakan - Guiguinto",
+    Description = "Bulakan to Guiguinto drop point",
+    Callback = function()
+        teleportTo(Vector3.new(1049.858, 14.004, 3246.740))
+    end
+})
+
+TpSection2:AddButton({
+    Title = "Drop point Guiguinto - Bulakan",
+    Description = "Guiguinto to Bulakan drop point",
+    Callback = function()
+        teleportTo(Vector3.new(-1545, 13, -3470))
+    end
+})
+
+TpSection2:AddButton({
+    Title = "Drop point Bulakan - Malolos",
+    Description = "Bulakan to Malolos drop point",
+    Callback = function()
+        teleportTo(Vector3.new(17793, 13, -1080))
+    end
+})
+
+TpSection2:AddButton({
+    Title = "Drop point Bulakan - Balagtas",
+    Description = "Bulakan to Balagtas drop point",
+    Callback = function()
+        teleportTo(Vector3.new(-3802, 13, 3357))
+    end
+})
+
+TpSection2:AddButton({
+    Title = "Drop point Balagtas - Bulakan",
+    Description = "Balagtas to Bulakan drop point",
+    Callback = function()
+        teleportTo(Vector3.new(-1512, 13, -3471))
+    end
+})
+
+local TpSection3 = TpTab:AddSection({ Title = "Locations" })
+TpSection3:AddButton({
+    Title = "Talyer",
+    Description = "Teleport to Talyer",
+    Callback = function()
+        teleportTo(Vector3.new(-430.981, 12.701, 620.724))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Police Station",
+    Description = "Teleport to Police Station",
+    Callback = function()
+        teleportTo(Vector3.new(1240.597, 12.863, 3211.784))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Malolos",
+    Description = "Teleport to Malolos",
+    Callback = function()
+        teleportTo(Vector3.new(17796, 13, -1104))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Balagtas",
+    Description = "Teleport to Balagtas",
+    Callback = function()
+        teleportTo(Vector3.new(-3879, 14, 3482))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Guiguinto",
+    Description = "Teleport to Guiguinto",
+    Callback = function()
+        teleportTo(Vector3.new(822, 13, 3290))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Junk Shop",
+    Description = "Teleport to Junk Shop",
+    Callback = function()
+        teleportTo(Vector3.new(-467, 13, 772))
+    end
+})
+
+TpSection3:AddButton({
+    Title = "Bulakan",
+    Description = "Teleport to Bulakan",
+    Callback = function()
+        teleportTo(Vector3.new(-1455, 13, -3438))
+    end
+})
+
+local TrollSection1 = TrollTab:AddSection({ Title = "Jeep Flinger" })
+local flingTargetName = ""
+
+TrollSection1:AddInput({
+    Title = "Target Player",
+    Description = "Enter the player name to fling their jeep",
+    PlaceHolder = "Username",
+    Default = "",
+    Callback = function(value)
+        flingTargetName = value
+    end
+})
+
+TrollSection1:AddButton({
+    Title = "Fling Jeep",
+    Description = "Launch the target player's jeep",
+    Callback = function()
+        if flingTargetName == "" then return end
+        local target = Players:FindFirstChild(flingTargetName)
+        if not target then return end
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local lp = LocalPlayer
+            local char = lp.Character
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local oldPos = hrp.CFrame
+                local velocity = Instance.new("BodyVelocity")
+                velocity.Velocity = Vector3.new(0, 5000, 0)
+                velocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                velocity.Parent = hrp
+                local angular = Instance.new("BodyAngularVelocity")
+                angular.AngularVelocity = Vector3.new(0, 5000, 0)
+                angular.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                angular.Parent = hrp
+                for i = 1, 20 do
+                    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                        hrp.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3, 0)
+                    end
+                    task.wait(0.01)
+                end
+                velocity:Destroy()
+                angular:Destroy()
+                hrp.CFrame = oldPos
+                hrp.Velocity = Vector3.new(0, 0, 0)
+                hrp.RotVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
+})
+
+local TrollSection2 = TrollTab:AddSection({ Title = "Jeep Breathing" })
+local breathingActive = false
+local breathingLoop = nil
+local breathingArgs = {
+    ["Fuel"] = 49.93502950764896,
+    ["RPM"] = 0,
+    ["DifferentialHealth"] = 99.99882781420766,
+    ["SteerC"] = 0,
+    ["TransmissionHealth"] = 99.37959134382187,
+    ["Throttle"] = 0.05,
+    ["Mileage"] = 5,
+    ["BatteryHealth"] = 99.9995,
+    ["Gear"] = 0,
+    ["DeductedExp"] = 0,
+    ["Crashed"] = true,
+    ["OilPressure"] = 21.75937747796297,
+    ["FrontTiresHealth"] = 99.9994527327599,
+    ["BrakeFluid"] = 99.99992500000002,
+    ["TransmissionOil"] = 99.99626049976072,
+    ["IsOn"] = false,
+    ["ClutchHealth"] = 99.99998950000003,
+    ["Brake"] = 0,
+    ["RadiatorHealth"] = 99.99998868312831,
+    ["CoolantLevel"] = 99.99888999999965,
+    ["BrakeHealth"] = 99.99987500000002,
+    ["RearTiresHealth"] = 99.9994527327599,
+    ["EngineHealth"] = 99.98528651746355,
+    ["EngineTemp"] = 46.295844052814054,
+    ["Speed"] = 0.004640357103198767,
+    ["EngineOil"] = 99.99626049976072,
+    ["SteerT"] = 0,
+    ["Password"] = 157913333,
+}
+
+TrollSection2:AddToggle({
+    Title = "Jeep Breathing",
+    Description = "Start it Automatic Jeep Breathing",
+    Default = false,
+    Callback = function(state)
+        breathingActive = state
+        if state then
+            local player = LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local jeepnies = workspace:WaitForChild("Jeepnies", 9e9)
+            local vehicle = jeepnies:WaitForChild(character.Name, 9e9)
+            breathingLoop = task.spawn(function()
+                while breathingActive do
+                    pcall(function()
+                        local engineRE = vehicle:WaitForChild("EngineRE", 9e9)
+                        engineRE:FireServer(breathingArgs)
+                    end)
+                    task.wait(0)
+                end
+            end)
+        else
+            if breathingLoop then
+                task.cancel(breathingLoop)
+                breathingLoop = nil
+            end
+        end
+    end
+})
+
+local BoostSection1 = BoostTab:AddSection({ Title = "Speed" })
+local velocityEnabled = false
+local velocityMult = 0.01572
+local maxSpeed = 140
+local customSpeedValue = 0.01572
+local customMaxSpeed = 140
+local currentSeat = nil
+local gasHeld = false
+local brakeHeld = false
+local wHeld = false
+local sHeld = false
+local gasButton = nil
+local brakeButton = nil
+local fastBreakEnabled = false
+
+BoostSection1:AddInput({
+    Title = "Type Speed",
+    Description = "Enter speed value (Default: 0.01572)",
+    PlaceHolder = "0.01572",
+    Default = "0.01572",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            customSpeedValue = num
+            velocityMult = num
+        end
+    end
+})
+
+BoostSection1:AddInput({
+    Title = "Max Speed",
+    Description = "Enter maximum speed limit (Default: 140)",
+    PlaceHolder = "140",
+    Default = "140",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            customMaxSpeed = num
+            maxSpeed = num
+        end
+    end
+})
+
+BoostSection1:AddButton({
+    Title = "Apply Speed Settings",
+    Description = "Apply Value",
+    Callback = function()
+        velocityMult = customSpeedValue
+        maxSpeed = customMaxSpeed
+    end
+})
+
+BoostSection1:AddToggle({
+    Title = "Jeep Speed",
+    Description = "Boost your jeep speed when holding Gas or W",
+    Default = false,
+    Callback = function(state)
+        velocityEnabled = state
+    end
+})
+
+BoostSection1:AddToggle({
+    Title = "Fast Break",
+    Description = "When holding S or Brake, instantly stop the jeep",
+    Default = false,
+    Callback = function(state)
+        fastBreakEnabled = state
+    end
+})
+
+local function setupSeat()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid:GetPropertyChangedSignal("SeatPart"):Connect(function()
+        local seat = humanoid.SeatPart
+        if seat and seat:IsA("BasePart") then
+            currentSeat = seat
+        else
+            currentSeat = nil
+        end
+    end)
+    local seat = humanoid.SeatPart
+    if seat and seat:IsA("BasePart") then
+        currentSeat = seat
+    end
+end
+
+setupSeat()
+LocalPlayer.CharacterAdded:Connect(setupSeat)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.W then
+        wHeld = true
+    end
+    if input.KeyCode == Enum.KeyCode.S then
+        sHeld = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.W then
+        wHeld = false
+    end
+    if input.KeyCode == Enum.KeyCode.S then
+        sHeld = false
+    end
+end)
+
+task.spawn(function()
+    repeat task.wait(0.5) until LocalPlayer:FindFirstChild("PlayerGui")
+    local playerGui = LocalPlayer.PlayerGui
+    local success, buttonsFolder = pcall(function()
+        return playerGui:WaitForChild("A-Chassis Interface"):WaitForChild("Buttons")
+    end)
+    if success and buttonsFolder then
+        gasButton = buttonsFolder:FindFirstChild("Gas")
+        brakeButton = buttonsFolder:FindFirstChild("Brake")
+        if gasButton then
+            gasButton.MouseButton1Down:Connect(function()
+                gasHeld = true
+            end)
+            gasButton.MouseButton1Up:Connect(function()
+                gasHeld = false
+            end)
+            gasButton.TouchStarted:Connect(function()
+                gasHeld = true
+            end)
+            gasButton.TouchEnded:Connect(function()
+                gasHeld = false
+            end)
+        end
+        if brakeButton then
+            brakeButton.MouseButton1Down:Connect(function()
+                brakeHeld = true
+            end)
+            brakeButton.MouseButton1Up:Connect(function()
+                brakeHeld = false
+            end)
+            brakeButton.TouchStarted:Connect(function()
+                brakeHeld = true
+            end)
+            brakeButton.TouchEnded:Connect(function()
+                brakeHeld = false
+            end)
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function(dt)
+    if not velocityEnabled or not currentSeat then return end
+    local vel = currentSeat.AssemblyLinearVelocity
+    local speed = vel.Magnitude
+    if (gasHeld or wHeld) and not brakeHeld and speed < maxSpeed then
+        local mult = 1 + (velocityMult * (dt * 60))
+        currentSeat.AssemblyLinearVelocity = Vector3.new(vel.X * mult, vel.Y, vel.Z * mult)
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not fastBreakEnabled then return end
+    local brakeActive = brakeHeld or sHeld
+    if brakeActive then
+        local character = LocalPlayer.Character
+        if character then
+            local hum = character:FindFirstChild("Humanoid")
+            if hum and hum.SeatPart then
+                local car = hum.SeatPart.Parent
+                if car and car:FindFirstChild("Body") then
+                    local body = car.Body
+                    if body:FindFirstChild("#Weight") then
+                        local jeepName = LocalPlayer.Name
+                        local jeepnies = workspace:FindFirstChild("Jeepnies")
+                        if jeepnies then
+                            local jeep = jeepnies:FindFirstChild(jeepName)
+                            if jeep then
+                                local controls = jeep:FindFirstChild("Controls")
+                                if controls then
+                                    local limbsRE = controls:FindFirstChild("LimbsRE")
+                                    if limbsRE then
+                                        local args = { [1] = "Light", [2] = "Brake", [3] = true, }
+                                        limbsRE:FireServer(unpack(args))
+                                    end
+                                end
+                            end
+                        end
+                        local carPrimaryPart = body["#Weight"]
+                        carPrimaryPart.Velocity = Vector3.new(0, carPrimaryPart.Velocity.Y, 0)
+                        carPrimaryPart.RotVelocity = Vector3.new(0, 0, 0)
+                        currentSeat.Velocity = Vector3.new(0, currentSeat.Velocity.Y, 0)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local MusicSection1 = MusicTab:AddSection({ Title = "Music Player" })
+local MusicController = {
+    currentSound = nil,
+    volume = 0.5,
+    loop = false,
+    isPaused = false,
+}
+
+function MusicController:Play(assetId)
+    if self.currentSound then
+        pcall(function()
+            self.currentSound:Stop()
+            self.currentSound:Destroy()
+        end)
+    end
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://" .. assetId
+    sound.Volume = self.volume
+    sound.Looped = self.loop
+    sound.Parent = game:GetService("SoundService")
+    sound:Play()
+    self.currentSound = sound
+    self.isPaused = false
+end
+
+function MusicController:Stop()
+    if self.currentSound then
+        pcall(function()
+            self.currentSound:Stop()
+            self.currentSound:Destroy()
+        end)
+        self.currentSound = nil
+        self.isPaused = false
+    end
+end
+
+local MusicSection2 = MusicTab:AddSection({ Title = "Custom Music" })
+local customMusicId = ""
+local customMusicVolume = 0.5
+
+MusicSection2:AddInput({
+    Title = "Music ID",
+    Description = "Enter a Roblox audio asset ID",
+    PlaceHolder = "Enter ID here...",
+    Default = "",
+    Callback = function(value)
+        customMusicId = value
+    end
+})
+
+MusicSection2:AddSlider({
+    Title = "Custom Music Volume",
+    Description = "Adjust volume for custom music",
+    Min = 0,
+    Max = 1,
+    Default = 0.5,
+    Callback = function(value)
+        customMusicVolume = value
+    end
+})
+
+MusicSection2:AddButton({
+    Title = "Play Custom Music",
+    Description = "Play music from the entered ID",
+    Callback = function()
+        if customMusicId and customMusicId ~= "" then
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://" .. customMusicId
+            sound.Volume = customMusicVolume
+            sound.Parent = game:GetService("SoundService")
+            sound:Play()
+            if MusicController.currentSound then
+                pcall(function()
+                    MusicController.currentSound:Stop()
+                    MusicController.currentSound:Destroy()
+                end)
+            end
+            MusicController.currentSound = sound
+            MusicController.volume = customMusicVolume
+        end
+    end
+})
+
+local MusicSection3 = MusicTab:AddSection({ Title = "Playlist" })
+local songs = {
+    {Id = 101998287760411, Name = "Pahintulot - Unknown Artist"},
+    {Id = 113228606989893, Name = "Palaisipan - Loonie"},
+    {Id = 91093214600377, Name = "Pamangulo - Loonie"},
+    {Id = 94020244189041, Name = "Panaginip - Unknown Artist"},
+    {Id = 103186131289010, Name = "Party 4 U (Cover) - Unknown Artist"},
+    {Id = 115245691174726, Name = "Pasko Sa Pinas - Yeng Constantino"},
+    {Id = 72274749745781, Name = "Pagsamo - Arthur Nery"},
+    {Id = 140617637775358, Name = "Purple Hail - Akala"},
+    {Id = 107764405399357, Name = "Purple Hail - Kwento"},
+    {Id = 127491860913950, Name = "Purple Hail - Para"},
+    {Id = 86793099693274, Name = "Puff Me Up - SUPAFLY"},
+    {Id = 86700413156316, Name = "Randomantic - TJ Monterde (Cover)"},
+    {Id = 99019663546064, Name = "Rebound - Silent Sanctuary"},
+    {Id = 111330689779749, Name = "Rock That Body (Budots) - Unknown Artist"},
+    {Id = 112590536755182, Name = "Sabi Ko Na Barbie Eh (Budots) - Unknown Artist"},
+    {Id = 77165853903435, Name = "Sakin Ka Pa Rin Hahalik - Nateman"},
+    {Id = 78487275982635, Name = "Salamin Salamin - Eric"},
+    {Id = 137700948886903, Name = "Nosi Ba Lasi - Sampaguita"},
+    {Id = 137209803817738, Name = "Siguro - Yeng Constantino"},
+    {Id = 106174792478284, Name = "Love Attack - Small Axe"},
+    {Id = 78426236518475, Name = "Streets (Para Sa Streets) - Hev Abi"},
+    {Id = 120200330391730, Name = "Thank You for the Love - ABS-CBN 2015"},
+    {Id = 129046939580756, Name = "The Woman Who Can't Be Moved - Unknown Artist"},
+    {Id = 133513122565592, Name = "'Til They Take My Heart Away - Gigi De Lana"},
+    {Id = 121930167781964, Name = "Titibo-Tibo - Moira Dela Torre"},
+    {Id = 138013123641752, Name = "Tingin - Cup of Joe"},
+    {Id = 133257180884988, Name = "Torete - Moonstar88"},
+    {Id = 104348021759246, Name = "Two Times (Budots) - Unknown Artist"},
+    {Id = 75880122752181, Name = "Umaasa - Unknown Artist"},
+    {Id = 81426811249394, Name = "Undressed - Sombr (Covered)"},
+    {Id = 109046857444579, Name = "Urong Sulong - Alisson Shore"},
+    {Id = 105897803731104, Name = "Wala Na Pag-ibig - Drei"},
+    {Id = 105849669299967, Name = "Walang Pag-ibig - Kievry"},
+    {Id = 137585819014180, Name = "Yellow - Coldplay (Live)"},
+}
+local songNames = {}
+for _, song in ipairs(songs) do
+    table.insert(songNames, song.Name)
+end
+local selectedSongId = songs[1].Id
+
+MusicSection3:AddSlider({
+    Title = "Volume",
+    Description = "Adjust playlist music volume",
+    Min = 0,
+    Max = 1,
+    Default = 0.5,
+    Callback = function(value)
+        MusicController.volume = value
+        if MusicController.currentSound then
+            MusicController.currentSound.Volume = value
+        end
+    end
+})
+
+MusicSection3:AddDropdown({
+    Title = "Select Song",
+    Description = "Choose a song to play",
+    Values = songNames,
+    Default = songNames[1],
+    Callback = function(value)
+        for _, song in ipairs(songs) do
+            if song.Name == value then
+                selectedSongId = song.Id
+                break
+            end
+        end
+    end
+})
+
+MusicSection3:AddButton({
+    Title = "Play Selected Song",
+    Description = "Play the selected song",
+    Callback = function()
+        MusicController:Play(selectedSongId)
+    end
+})
+
+MusicSection3:AddButton({
+    Title = "Stop Music",
+    Description = "Stop music",
+    Callback = function()
+        MusicController:Stop()
+    end
+})
+
+local MainSection8 = MainTab:AddSection({ Title = "Auto Cash V2" })
+local autoCashV2Active = false
+local autoCashV2Frame = nil
+local autoCashV2ScreenGui = nil
+local autoCashV2StartTime = 0
+local autoCashV2TotalEarned = 0
+local autoCashV2LastCash = 0
+local autoCashV2Loop = nil
+local autoCashV2Thread = nil
+local cashLimit = 0
+local cashLimitEnabled = false
+
+MainSection8:AddInput({
+    Title = "Cash Limit",
+    Description = "Player will be kicked when cash reaches this amount (0 = disabled)",
+    PlaceHolder = "0",
+    Default = "0",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num then
+            cashLimit = num
+            cashLimitEnabled = num > 0
+        end
+    end
+})
+
+MainSection8:AddToggle({
+    Title = "Auto Cash V2",
+    Description = "Advanced auto farm with GUI tracking",
+    Default = false,
+    Callback = function(state)
+        autoCashV2Active = state
+        if state then
+            autoCashV2ScreenGui = Instance.new("ScreenGui")
+            autoCashV2ScreenGui.Name = "KryzenFarmGUI"
+            autoCashV2ScreenGui.Parent = CoreGui
+            autoCashV2ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            autoCashV2ScreenGui.IgnoreGuiInset = true
+            autoCashV2ScreenGui.ResetOnSpawn = false
+
+            local BlackBackground = Instance.new("Frame")
+            BlackBackground.Name = "BlackBackground"
+            BlackBackground.Parent = autoCashV2ScreenGui
+            BlackBackground.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            BlackBackground.BackgroundTransparency = 0
+            BlackBackground.Size = UDim2.new(1, 0, 1, 0)
+            BlackBackground.Position = UDim2.new(0, 0, 0, 0)
+            BlackBackground.BorderSizePixel = 0
+            BlackBackground.ZIndex = 0
+
+            autoCashV2Frame = Instance.new("Frame")
+            autoCashV2Frame.Name = "MainFrame"
+            autoCashV2Frame.Parent = autoCashV2ScreenGui
+            autoCashV2Frame.BackgroundTransparency = 0.15
+            autoCashV2Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            autoCashV2Frame.Position = UDim2.new(0.5, -199, 0.5, -102.5)
+            autoCashV2Frame.Size = UDim2.new(0, 398, 0, 205)
+            autoCashV2Frame.BorderSizePixel = 0
+            autoCashV2Frame.ZIndex = 2
+
+            local MainCorner = Instance.new("UICorner")
+            MainCorner.CornerRadius = UDim.new(0, 15)
+            MainCorner.Parent = autoCashV2Frame
+
+            local MainGradient = Instance.new("UIGradient")
+            MainGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(230, 230, 255)) }
+            MainGradient.Rotation = 45
+            MainGradient.Parent = autoCashV2Frame
+
+            local UIStroke = Instance.new("UIStroke")
+            UIStroke.Parent = autoCashV2Frame
+            UIStroke.Thickness = 1.5
+            UIStroke.Transparency = 0
+            UIStroke.Color = Color3.fromRGB(255, 255, 255)
+
+            local BorderGradient = Instance.new("UIGradient")
+            BorderGradient.Color = ColorSequence.new{ ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(230, 230, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255)) }
+            BorderGradient.Parent = UIStroke
+
+            task.spawn(function()
+                while autoCashV2Frame and autoCashV2Frame.Parent do
+                    BorderGradient.Rotation = BorderGradient.Rotation + 1
+                    task.wait(0.02)
+                end
+            end)
+
+            local avatarIcon = Instance.new("ImageLabel")
+            avatarIcon.Size = UDim2.new(0, 32, 0, 32)
+            avatarIcon.Position = UDim2.new(0, 12, 0, 12)
+            avatarIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            avatarIcon.BackgroundTransparency = 0
+            avatarIcon.BorderSizePixel = 0
+            avatarIcon.Parent = autoCashV2Frame
+
+            local avatarCorner = Instance.new("UICorner")
+            avatarCorner.CornerRadius = UDim.new(1, 0)
+            avatarCorner.Parent = avatarIcon
+
+            local userId = LocalPlayer.UserId
+            local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+            avatarIcon.Image = avatarUrl
+
+            local welcomeText = Instance.new("TextLabel")
+            welcomeText.Size = UDim2.new(1, -52, 0, 14)
+            welcomeText.Position = UDim2.new(0, 52, 0, 13)
+            welcomeText.BackgroundTransparency = 1
+            welcomeText.Text = "Welcome back, Premium Users"
+            welcomeText.TextColor3 = Color3.fromRGB(0, 0, 0)
+            welcomeText.TextSize = 11
+            welcomeText.Font = Enum.Font.GothamBold
+            welcomeText.TextXAlignment = Enum.TextXAlignment.Left
+            welcomeText.Parent = autoCashV2Frame
+
+            local zelxText = Instance.new("TextLabel")
+            zelxText.Size = UDim2.new(1, -52, 0, 12)
+            zelxText.Position = UDim2.new(0, 52, 0, 28)
+            zelxText.BackgroundTransparency = 1
+            zelxText.Text = "Kryzen Cash Information"
+            zelxText.TextColor3 = Color3.fromRGB(80, 80, 100)
+            zelxText.TextSize = 9
+            zelxText.Font = Enum.Font.Gotham
+            zelxText.TextXAlignment = Enum.TextXAlignment.Left
+            zelxText.Parent = autoCashV2Frame
+
+            local currentMoneyLabel = Instance.new("TextLabel")
+            currentMoneyLabel.Size = UDim2.new(1, 0, 0, 14)
+            currentMoneyLabel.Position = UDim2.new(0, 0, 0, 50)
+            currentMoneyLabel.BackgroundTransparency = 1
+            currentMoneyLabel.Text = "Current Money"
+            currentMoneyLabel.TextColor3 = Color3.fromRGB(80, 80, 100)
+            currentMoneyLabel.TextSize = 10
+            currentMoneyLabel.Font = Enum.Font.Gotham
+            currentMoneyLabel.TextXAlignment = Enum.TextXAlignment.Center
+            currentMoneyLabel.Parent = autoCashV2Frame
+
+            local moneyValue = Instance.new("TextLabel")
+            moneyValue.Size = UDim2.new(1, 0, 0, 24)
+            moneyValue.Position = UDim2.new(0, 0, 0, 64)
+            moneyValue.BackgroundTransparency = 1
+            moneyValue.Text = "0"
+            moneyValue.TextColor3 = Color3.fromRGB(50, 150, 50)
+            moneyValue.TextSize = 24
+            moneyValue.Font = Enum.Font.GothamBold
+            moneyValue.TextXAlignment = Enum.TextXAlignment.Center
+            moneyValue.Parent = autoCashV2Frame
+
+            local infoContainer = Instance.new("Frame")
+            infoContainer.Size = UDim2.new(1, -24, 0, 45)
+            infoContainer.Position = UDim2.new(0, 12, 0, 93)
+            infoContainer.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
+            infoContainer.BackgroundTransparency = 0.5
+            infoContainer.BorderSizePixel = 0
+            infoContainer.Parent = autoCashV2Frame
+
+            local infoCorner = Instance.new("UICorner")
+            infoCorner.CornerRadius = UDim.new(0, 10)
+            infoCorner.Parent = infoContainer
+
+            local timeLabel = Instance.new("TextLabel")
+            timeLabel.Size = UDim2.new(0.5, -5, 0, 14)
+            timeLabel.Position = UDim2.new(0, 5, 0, 5)
+            timeLabel.BackgroundTransparency = 1
+            timeLabel.Text = "Time Elapsed"
+            timeLabel.TextColor3 = Color3.fromRGB(80, 80, 100)
+            timeLabel.TextSize = 9
+            timeLabel.Font = Enum.Font.Gotham
+            timeLabel.TextXAlignment = Enum.TextXAlignment.Center
+            timeLabel.Parent = infoContainer
+
+            local timeValue = Instance.new("TextLabel")
+            timeValue.Size = UDim2.new(0.5, -5, 0, 20)
+            timeValue.Position = UDim2.new(0, 5, 0, 21)
+            timeValue.BackgroundTransparency = 1
+            timeValue.Text = "00:00:00"
+            timeValue.TextColor3 = Color3.fromRGB(0, 0, 0)
+            timeValue.TextSize = 14
+            timeValue.Font = Enum.Font.GothamBold
+            timeValue.TextXAlignment = Enum.TextXAlignment.Center
+            timeValue.Parent = infoContainer
+
+            local earnedLabel = Instance.new("TextLabel")
+            earnedLabel.Size = UDim2.new(0.5, -5, 0, 14)
+            earnedLabel.Position = UDim2.new(0.5, 0, 0, 5)
+            earnedLabel.BackgroundTransparency = 1
+            earnedLabel.Text = "Earned Cash"
+            earnedLabel.TextColor3 = Color3.fromRGB(80, 80, 100)
+            earnedLabel.TextSize = 9
+            earnedLabel.Font = Enum.Font.Gotham
+            earnedLabel.TextXAlignment = Enum.TextXAlignment.Center
+            earnedLabel.Parent = infoContainer
+
+            local earnedValue = Instance.new("TextLabel")
+            earnedValue.Size = UDim2.new(0.5, -5, 0, 20)
+            earnedValue.Position = UDim2.new(0.5, 0, 0, 21)
+            earnedValue.BackgroundTransparency = 1
+            earnedValue.Text = "0"
+            earnedValue.TextColor3 = Color3.fromRGB(50, 150, 50)
+            earnedValue.TextSize = 14
+            earnedValue.Font = Enum.Font.GothamBold
+            earnedValue.TextXAlignment = Enum.TextXAlignment.Center
+            earnedValue.Parent = infoContainer
+
+            local statusContainer = Instance.new("Frame")
+            statusContainer.Size = UDim2.new(1, -24, 0, 38)
+            statusContainer.Position = UDim2.new(0, 12, 0, 142)
+            statusContainer.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
+            statusContainer.BackgroundTransparency = 0.5
+            statusContainer.BorderSizePixel = 0
+            statusContainer.Parent = autoCashV2Frame
+
+            local statusCorner = Instance.new("UICorner")
+            statusCorner.CornerRadius = UDim.new(0, 10)
+            statusCorner.Parent = statusContainer
+
+            local statusText = Instance.new("TextLabel")
+            statusText.Size = UDim2.new(1, 0, 0, 12)
+            statusText.Position = UDim2.new(0, 0, 0, 4)
+            statusText.BackgroundTransparency = 1
+            statusText.Text = "Status"
+            statusText.TextColor3 = Color3.fromRGB(80, 80, 100)
+            statusText.TextSize = 9
+            statusText.Font = Enum.Font.Gotham
+            statusText.TextXAlignment = Enum.TextXAlignment.Center
+            statusText.Parent = statusContainer
+
+            local statusValue = Instance.new("TextLabel")
+            statusValue.Size = UDim2.new(1, 0, 0, 18)
+            statusValue.Position = UDim2.new(0, 0, 0, 18)
+            statusValue.BackgroundTransparency = 1
+            statusValue.Text = "Working"
+            statusValue.TextColor3 = Color3.fromRGB(50, 150, 50)
+            statusValue.TextSize = 12
+            statusValue.Font = Enum.Font.GothamBold
+            statusValue.TextXAlignment = Enum.TextXAlignment.Center
+            statusValue.Parent = statusContainer
+
+            autoCashV2StartTime = os.time()
+            autoCashV2TotalEarned = 0
+
+            local cash = LocalPlayer.leaderstats and LocalPlayer.leaderstats.Cash
+            if cash then
+                autoCashV2LastCash = cash.Value
+                moneyValue.Text = "₱" .. tostring(cash.Value)
+            end
+
+            local function updateCashDisplay()
+                local cash = LocalPlayer.leaderstats and LocalPlayer.leaderstats.Cash
+                if cash then
+                    local currentCash = cash.Value
+                    moneyValue.Text = "₱" .. tostring(currentCash)
+                    if currentCash > autoCashV2LastCash and autoCashV2LastCash > 0 and autoCashV2Active then
+                        local earned = currentCash - autoCashV2LastCash
+                        autoCashV2TotalEarned = autoCashV2TotalEarned + earned
+                        earnedValue.Text = "₱" .. tostring(autoCashV2TotalEarned)
+                    end
+                    autoCashV2LastCash = currentCash
+                    
+                    if cashLimitEnabled and currentCash >= cashLimit then
+                        LocalPlayer:Kick("Cash limit reached: " .. currentCash .. " / " .. cashLimit)
+                    end
+                end
+            end
+
+            local function updateTimeDisplay()
+                while autoCashV2Active and autoCashV2ScreenGui and autoCashV2ScreenGui.Parent do
+                    local elapsed = os.time() - autoCashV2StartTime
+                    local hours = math.floor(elapsed / 3600)
+                    local minutes = math.floor((elapsed % 3600) / 60)
+                    local secs = elapsed % 60
+                    timeValue.Text = string.format("%02d:%02d:%02d", hours, minutes, secs)
+                    task.wait(1)
+                end
+            end
+
+            if LocalPlayer.leaderstats and LocalPlayer.leaderstats.Cash then
+                LocalPlayer.leaderstats.Cash:GetPropertyChangedSignal("Value"):Connect(updateCashDisplay)
+            end
+
+            task.spawn(updateTimeDisplay)
+
+            autoCashV2Thread = task.spawn(function()
+                while autoCashV2Active do
+                    local success, err = pcall(function()
+                        local buyArgs = { [1] = { [1] = { [1] = "3"; [2] = "BuyJeepney"; [3] = { ["JeepneyName"] = "Sarao Custombuilt Model 2"; ["Password"] = 800584595; }; }; }; }
+                        catNet:FireServer(unpack(buyArgs))
+                        task.wait()
+                        local getDataStoreArgs = {}
+                        remotes:WaitForChild("GetDataStore", 9e9):InvokeServer(unpack(getDataStoreArgs))
+                        task.wait()
+                        local unlockArgs = { [1] = { [1] = { [1] = "3"; [2] = "CloseCustomize"; [3] = { ["Password"] = 332271450; ["NewOwnedParts"] = { ["BA - 05"] = 100; ["BA - 01"] = 100; ["BA - 03"] = 100; ["4-Speed Manual"] = 100; ["6-Speed Manual"] = 100; ["5-Speed Manual"] = 100; ["C - 04"] = 100; ["B - 04"] = 100; ["EO - 03"] = 100; ["4JJ1"] = 100; ["4HK1 Single Turbo"] = 100; ["4JK1"] = 100; ["4HE1 Single Turbo"] = 100; ["4-Speed Manual (High Ratio)"] = 100; ["T - 01 (F)"] = 100; ["EO - 01"] = 100; ["T - 05 (R)"] = 100; ["T - 03 (R)"] = 100; ["EO - 05"] = 100; ["T - 04 (R)"] = 100; ["T - 02 (R)"] = 100; ["R - 02"] = 100; ["TO - 05"] = 100; ["TO - 04"] = 100; ["TO - 03"] = 100; ["BA - 02"] = 100; ["EO - 04"] = 100; ["B - 02"] = 100; ["C - 02"] = 100; ["BA - 04"] = 100; ["T - 02 (F)"] = 100; ["EO - 02"] = 100; ["T - 04 (F)"] = 100; ["R - 01"] = 100; ["TO - 02"] = 100; ["T - 03 (F)"] = 100; ["B - 03"] = 100; ["BF - 01"] = 100; ["T - 05 (F)"] = 100; ["TO - 01"] = 100; ["B - 05"] = 100; ["CL - 01"] = 100; ["4BC2"] = 100; ["CL - 02"] = 100; ["T - 01 (R)"] = 100; ["BF - 02"] = 100; ["C - 03"] = 100; ["4BE1"] = 100; ["4HK1 Twin Turbo"] = 100; ["B - 01"] = 100; ["4HF1 Twin Turbo"] = 100; ["D - 01"] = 100; ["C - 01"] = 100; }; ["NewEquippedParts"] = { ["Clutch"] = "CL - 01"; ["Brake"] = "B - 01"; ["Differential"] = "D - 01"; ["Engine"] = "4HK1 Twin Turbo"; ["Transmission"] = "4-Speed Manual (High Ratio)"; ["Coolant"] = "C - 01"; ["BrakeFluid"] = "BF - 01"; ["RearTires"] = "T - 01 (R)"; ["TransmissionOil"] = "TO - 01"; ["Battery"] = "BA - 01"; ["Radiator"] = "R - 01"; ["EngineOil"] = "EO - 01"; ["FrontTires"] = "T - 01 (F)"; }; ["JeepneyName"] = "Sarao Custombuilt Model 2_#1"; ["NewPartsStatus"] = { ["FrontTiresHealth"] = 100; ["DifferentialHealth"] = 100; ["ClutchHealth"] = 100; ["TransmissionHealth"] = 100; ["RadiatorHealth"] = 100; ["CoolantLevel"] = 100; ["BrakeHealth"] = 100; ["EngineHealth"] = 100; ["RearTiresHealth"] = 100; ["BrakeFluid"] = 100; ["TransmissionOil"] = 100; ["EngineOil"] = 100; ["BatteryHealth"] = 100; }; }; }; }; }
+                        catNet:FireServer(unpack(unlockArgs))
+                        task.wait()
+                        local spawnArgs = { [1] = { ["Garage"] = workspace:WaitForChild("Map", 9e9):WaitForChild("Misc", 9e9):WaitForChild("Garages", 9e9):WaitForChild("606 Matungao st., Matungao, Bulakan, Bulacan", 9e9); ["Password"] = 643531260; ["JeepneyName"] = "Sarao Custombuilt Model 2_#1"; ["Route"] = "Balagtas - Bulakan"; }; }
+                        remotes:WaitForChild("SpawnJeepney", 9e9):FireServer(unpack(spawnArgs))
+                        task.wait()
+                        local sellArgs = { [1] = { ["Index"] = "Sarao Custombuilt Model 2_#1"; }; }
+                        remotes:WaitForChild("SellJeepney", 9e9):FireServer(unpack(sellArgs))
+                        task.wait()
+                    end)
+                    if not success and autoCashV2Active then
+                        statusValue.Text = "Error"
+                        statusValue.TextColor3 = Color3.fromRGB(255, 50, 50)
+                        task.wait(1)
+                        statusValue.Text = "Working"
+                        statusValue.TextColor3 = Color3.fromRGB(50, 150, 50)
+                    end
+                end
+            end)
+        else
+            if autoCashV2Thread then
+                task.cancel(autoCashV2Thread)
+                autoCashV2Thread = nil
+            end
+            if autoCashV2ScreenGui then
+                autoCashV2ScreenGui:Destroy()
+                autoCashV2ScreenGui = nil
+                autoCashV2Frame = nil
+            end
+        end
+    end
+})
+
+pcall(function()
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local spyKeywords = {
+        "Block remote", "Clear logs", "Copy code", "Get result", "Ignore remote", "Unblock all remotes", "Remote Spy"
+    }
+    local function ScanUI(obj)
+        local detected = false
+        for _, v in pairs(obj:GetDescendants()) do
+            if v:IsA("TextButton") or v:IsA("TextLabel") then
+                for _, keyword in pairs(spyKeywords) do
+                    if string.find(string.lower(v.Text), string.lower(keyword)) then
+                        detected = true
+                        break
+                    end
+                end
+            end
+            if detected then break end
+        end
+        if detected then
+            task.wait(0.5)
+            obj:Destroy()
+            LocalPlayer:Kick("anti skid")
+        end
+    end
+    for _, child in pairs(CoreGui:GetChildren()) do
+        ScanUI(child)
+    end
+    CoreGui.ChildAdded:Connect(function(child)
+        ScanUI(child)
+    end)
+end)
+
+local mt = getrawmetatable(game)
+local old = mt.__namecall
+setreadonly(mt, false)
+getgenv().Repeat = 10500
+mt.__namecall = function(roar, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    if method == "FireServer" or method == "InvokeServer" then
+        if roar.Name == "UnloadPassenger" then
+            for i = 1, getgenv().Repeat do
+                old(roar, ...)
+            end
+            return
+        end
+    end
+    return old(roar, ...)
+end
+setreadonly(mt, true)
