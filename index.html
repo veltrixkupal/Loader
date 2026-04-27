@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>kryzen · monochrome sticker archive</title>
+  <!-- pure black/white aesthetic - DM Mono + Syne -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* absolute black & white palette — no color tints except pure grey */
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface-2: #0f0f0f;
+      --border: #1c1c1c;
+      --border-soft: #121212;
+      --text: #f0f0f0;
+      --text-dim: #6b6b6b;
+      --text-muted: #2a2a2a;
+      --accent-bw: #ffffff;
+      --accent-dim: #3a3a3a;
+      --hover-glow: #1f1f1f;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* sticky header — pure monochrome */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 0 28px;
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-names {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .logo-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+    .logo-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: #7a7a7a;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .header-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .header-username {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #e0e0e0;
+      display: none;
+    }
+    .header-date {
+      font-size: 9px;
+      color: #5c5c5c;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .header-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .header-count {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: #9a9a9a;
+      letter-spacing: 0.08em;
+      background: #0a0a0a;
+      padding: 4px 12px;
+      border-radius: 40px;
+      border: 0.5px solid #222;
+    }
+    .header-count-dot {
+      width: 5px;
+      height: 5px;
+      background: #c0c0c0;
+      border-radius: 50%;
+      animation: bwPulse 2s infinite ease;
+    }
+    @keyframes bwPulse {
+      0% { opacity: 0.5; transform: scale(0.8); background: #aaa;}
+      50% { opacity: 1; transform: scale(1.2); background: #fff;}
+      100% { opacity: 0.5; transform: scale(0.8); background: #aaa;}
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 44px 28px 80px;
+    }
+
+    /* loading / empty / error cards */
+    .state-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 55vh;
+      gap: 20px;
+      text-align: center;
+    }
+    .spinner-bw {
+      width: 34px;
+      height: 34px;
+      border: 2px solid #1c1c1c;
+      border-top-color: #eeeeee;
+      border-radius: 50%;
+      animation: spinBW 0.8s linear infinite;
+    }
+    @keyframes spinBW { to { transform: rotate(360deg); } }
+    .state-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+    .state-sub {
+      font-size: 0.8rem;
+      color: #6f6f6f;
+      max-width: 280px;
+    }
+
+    /* toolbar section */
+    .bar {
+      margin-bottom: 32px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid #151515;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid #242424;
+      color: #b4b4b4;
+      padding: 7px 20px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .btn:hover {
+      border-color: #4a4a4a;
+      color: #ffffff;
+      background: #0c0c0c;
+    }
+    .btn-primary {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: #000000;
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background: #e0e0e0;
+      border-color: #e0e0e0;
+      color: #000;
+    }
+
+    /* sticker grid — pure bw minimal */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1px;
+      background: #151515;
+      border: 1px solid #151515;
+    }
+    .card {
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.18s ease;
+    }
+    .card:hover {
+      background: #0a0a0a;
+    }
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #030303;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid #111;
+    }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+      filter: grayscale(100%);
+    }
+    .card:hover .card-img img {
+      transform: scale(1.03);
+    }
+    .card-foot {
+      padding: 10px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card-id {
+      font-size: 9px;
+      color: #7c7c7c;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.03em;
+    }
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 100%;
+      padding: 6px;
+      background: #050505;
+      border: 1px solid #1f1f1f;
+      color: #9b9b9b;
+      font-size: 8px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover {
+      border-color: #3c3c3c;
+      color: #ffffff;
+      background: #131313;
+    }
+
+    /* responsive adjustments */
+    @media (max-width: 600px) {
+      header {
+        padding: 0 18px;
+        grid-template-columns: auto 1fr auto;
+        gap: 8px;
+      }
+      main {
+        padding: 28px 18px 60px;
+      }
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+      .bar {
+        gap: 10px;
+      }
+      .btn {
+        padding: 5px 14px;
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-names">
+      <!-- kryzen identity instead of Aikoware — exactly as requested -->
+      <span class="logo-title">kryzen</span>
+      <span class="logo-sub">STICKER GALLERY</span>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="header-username" id="header-username"></div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+  <div class="header-right">
+    <div class="header-count" id="hcount">
+      <div class="header-count-dot"></div>
+      <span id="hcount-text"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- loading state -->
+  <div id="loading" class="state-panel">
+    <div class="spinner-bw"></div>
+    <div class="state-title">fetching stickers...</div>
+    <div class="state-sub">paste content is loading in monochrome mode</div>
+  </div>
+  
+  <!-- empty state -->
+  <div id="empty" class="state-panel" style="display:none">
+    <div class="state-title">⛔ no stickers found</div>
+    <div class="state-sub">invalid paste ID or no sticker IDs inside</div>
+  </div>
+  
+  <!-- error state -->
+  <div id="error" class="state-panel" style="display:none">
+    <div class="state-title">✖ failed to load</div>
+    <div class="state-sub">paste may be expired / unreachable</div>
+  </div>
+
+  <!-- main content grid -->
+  <div id="content" style="display:none">
+    <div class="bar">
+      <button class="btn btn-primary" id="copy-all">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1"/><path d="M8 4V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2"/></svg>
+        COPY ALL IDS
+      </button>
+      <a href="#" class="btn" id="raw-link" target="_blank">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        RAW
+      </a>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<script>
+  // === MONOCHROME STICKER GALLERY — KRYZEN EDITION ===
+  // reads paste ID from URL parameter ?id=...
+  const pasteId = new URLSearchParams(location.search).get('id');
+
+  // ui state helper
+  function setActiveState(stateId) {
+    const loadingDiv = document.getElementById('loading');
+    const emptyDiv = document.getElementById('empty');
+    const errorDiv = document.getElementById('error');
+    const contentDiv = document.getElementById('content');
+    loadingDiv.style.display = 'none';
+    emptyDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    contentDiv.style.display = 'none';
+    if (stateId === 'loading') loadingDiv.style.display = 'flex';
+    else if (stateId === 'empty') emptyDiv.style.display = 'flex';
+    else if (stateId === 'error') errorDiv.style.display = 'flex';
+    else if (stateId === 'content') contentDiv.style.display = 'block';
+  }
+
+  // robust copy (clipboard + fallback)
+  async function copyToClipboard(text, btnElement) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showCopyFeedback(btnElement);
+    } catch (err) {
+      // fallback for old browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showCopyFeedback(btnElement);
+    }
+  }
+
+  function showCopyFeedback(btn) {
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    const isCopyAll = btn.id === 'copy-all';
+    if (isCopyAll) {
+      btn.innerHTML = '✓ COPIED!';
+      setTimeout(() => { btn.innerHTML = originalText; }, 1500);
+    } else {
+      btn.innerHTML = '✓ COPIED';
+      setTimeout(() => { btn.innerHTML = originalText; }, 1000);
+    }
+  }
+
+  // extract all numeric IDs (6+ digits) from raw text
+  function extractStickerIds(rawText) {
+    // match sequences of digits with min length 6 (typical roblox asset ID length)
+    const matches = rawText.match(/\b\d{6,}\b/g);
+    return matches ? [...new Set(matches)] : [];
+  }
+
+  // multi-proxy fetch to avoid CORS issues with pastefy
+  async function fetchPasteRaw(url) {
+    const directFetch = async () => {
+      const res = await fetch(url);
+      if (res.ok) return await res.text();
+      throw new Error('direct failed');
+    };
+    const allOriginsProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const proxyFetch = async () => {
+      const res = await fetch(allOriginsProxy);
+      if (res.ok) return await res.text();
+      throw new Error('proxy failed');
+    };
+    try {
+      return await directFetch();
+    } catch (e) {
+      try {
+        return await proxyFetch();
+      } catch (e2) {
+        return null;
+      }
+    }
+  }
+
+  // main initialization
+  async function initGallery() {
+    if (!pasteId) {
+      setActiveState('empty');
+      return;
+    }
+    
+    const rawEndpoint = `https://pastefy.app/${pasteId}/raw`;
+    const rawLinkAnchor = document.getElementById('raw-link');
+    if (rawLinkAnchor) rawLinkAnchor.href = rawEndpoint;
+    
+    // fetch raw content
+    const rawContent = await fetchPasteRaw(rawEndpoint);
+    if (!rawContent || rawContent.trim().length === 0) {
+      setActiveState('error');
+      return;
+    }
+    
+    const stickerIds = extractStickerIds(rawContent);
+    if (stickerIds.length === 0) {
+      setActiveState('error');
+      return;
+    }
+    
+    // extract "Stickers from: ..." optional username
+    const usernameMatch = rawContent.match(/^Stickers from:\s*(.+)$/m);
+    const displayName = usernameMatch ? usernameMatch[1].trim() : 'sticker pack';
+    const usernameEl = document.getElementById('header-username');
+    if (usernameEl) {
+      usernameEl.textContent = displayName;
+      usernameEl.style.display = 'block';
+    }
+    
+    // set current date in header (DD MMM YYYY style)
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+    const dateEl = document.getElementById('header-date');
+    if (dateEl) dateEl.textContent = formattedDate;
+    
+    // update count badge
+    const hcount = document.getElementById('hcount');
+    const hcountText = document.getElementById('hcount-text');
+    if (hcountText) hcountText.textContent = `${stickerIds.length} STICKERS`;
+    if (hcount) hcount.style.display = 'flex';
+    
+    // build grid container
+    const gridContainer = document.getElementById('grid');
+    if (!gridContainer) return;
+    gridContainer.innerHTML = '';
+    
+    // pre-create all card elements and store image references
+    const imgElementsMap = new Map(); // id -> img element
+    
+    for (const id of stickerIds) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.setAttribute('data-id', id);
+      
+      const imgId = `sticker_img_${id}`;
+      card.innerHTML = `
+        <div class="card-img">
+          <img id="${imgId}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23050505'/%3E%3Ctext x='50' y='55' font-size='9' fill='%233a3a3a' text-anchor='middle' font-family='monospace'%3Eloading%3C/text%3E%3C/svg%3E" loading="lazy" alt="sticker preview">
+        </div>
+        <div class="card-foot">
+          <div class="card-id">${id}</div>
+          <button class="copy-btn" data-copy-id="${id}">COPY ID</button>
+        </div>
+      `;
+      
+      const copyBtn = card.querySelector('.copy-btn');
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyToClipboard(id, copyBtn);
+      });
+      
+      gridContainer.appendChild(card);
+      const imgElement = document.getElementById(imgId);
+      if (imgElement) imgElementsMap.set(id, imgElement);
+    }
+    
+    setActiveState('content');
+    
+    // load images in batches using Roblox thumbnails API (monochrome via filter)
+    // split into chunks of 100 to avoid URI length issues
+    const chunkSize = 80;
+    for (let i = 0; i < stickerIds.length; i += chunkSize) {
+      const chunk = stickerIds.slice(i, i + chunkSize);
+      const assetIdsParam = chunk.join(',');
+      const thumbnailUrl = `https://thumbnails.roproxy.com/v1/assets?assetIds=${assetIdsParam}&returnPolicy=PlaceHolder&size=420x420&format=Png`;
+      try {
+        const response = await fetch(thumbnailUrl);
+        if (response.ok) {
+          const jsonData = await response.json();
+          if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
+            for (const asset of jsonData.data) {
+              const targetId = asset.targetId?.toString();
+              const img = imgElementsMap.get(targetId);
+              if (img) {
+                if (asset.state === 'Completed' && asset.imageUrl) {
+                  img.src = asset.imageUrl;
+                  img.setAttribute('data-loaded', 'true');
+                } else {
+                  img.src = "https://placehold.co/420x420/111111/4a4a4a?text=⛔+NO+PREVIEW&font=monospace";
+                }
+              }
+            }
+          }
+        } else {
+          // fallback placeholder for chunk fails
+          for (const id of chunk) {
+            const fallbackImg = imgElementsMap.get(id);
+            if (fallbackImg && !fallbackImg.getAttribute('data-loaded')) {
+              fallbackImg.src = "https://placehold.co/420x420/0a0a0a/555555?text=UNAVAILABLE&font=monospace";
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('thumbnail batch error', err);
+        for (const id of chunk) {
+          const errImg = imgElementsMap.get(id);
+          if (errImg && !errImg.getAttribute('data-loaded')) {
+            errImg.src = "https://placehold.co/420x420/0c0c0c/4f4f4f?text=ERROR&font=monospace";
+          }
+        }
+      }
+      // small delay to avoid rate limiting
+      await new Promise(r => setTimeout(r, 180));
+    }
+    
+    // "Copy All IDs" functionality
+    const copyAllBtn = document.getElementById('copy-all');
+    if (copyAllBtn) {
+      copyAllBtn.addEventListener('click', () => {
+        const allIdsString = stickerIds.join('\n');
+        copyToClipboard(allIdsString, copyAllBtn);
+      });
+    }
+  }
+  
+  // start the gallery
+  initGallery().catch(err => {
+    console.error(err);
+    setActiveState('error');
+  });
+</script>
+</body>
+</html>
